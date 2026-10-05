@@ -1,4 +1,4 @@
-"""Connexion OAuth à la Search Console avec un compte Google @datashake.fr.
+"""Connexion OAuth à la Search Console (et à BigQuery) avec le compte Google perso.
 
 Usage :
   python scripts/oauth_login.py chemin/vers/client_secret.json [--label pierre] [--env-file …/.claude/secrets/.env]
@@ -10,8 +10,8 @@ dans les secrets GitHub du repo. Aucune valeur n'est affichée.
 Plusieurs comptes : --label <nom> pose GSC_REFRESH_TOKEN_<NOM> au lieu de GSC_REFRESH_TOKEN. Un projet utilise
 ce compte en déclarant `account: <nom>` dans config/sites.yaml. Sans --label, c'est le compte « default ».
 
-Le fichier client_secret.json vient d'un client OAuth « Application de bureau »
-créé dans le projet Google Cloud ds-suivi-positions-gsc (écran de consentement en mode Interne).
+Le fichier client_secret.json vient d'un client OAuth « Application de bureau » créé dans le projet Google Cloud perso
+(écran de consentement Externe, publié « En production » pour que le jeton n'expire pas au bout de 7 jours).
 """
 
 import argparse
@@ -58,11 +58,14 @@ def main():
 
     if a.env_file:
         # Remplace la ligne existante du refresh token ou l'ajoute à la fin du fichier de secrets local
-        key = "GSC_SUIVI_POSITIONS_REFRESH_TOKEN" + suffix
-        lines = [l for l in open(a.env_file).read().splitlines() if not l.startswith(key + "=")]
-        lines.append(f"{key}={creds.refresh_token}")
+        # Préfixe PERSO_ : ne jamais écraser les clés de l'outil datashake dans le même fichier de secrets
+        values = {"PERSO_SUIVI_POSITIONS_OAUTH_CLIENT_ID": client["client_id"],
+                  "PERSO_SUIVI_POSITIONS_OAUTH_CLIENT_SECRET": client["client_secret"],
+                  "PERSO_SUIVI_POSITIONS_REFRESH_TOKEN" + suffix: creds.refresh_token}
+        lines = [l for l in open(a.env_file).read().splitlines() if l.split("=", 1)[0] not in values]
+        lines += [f"{k}={v}" for k, v in values.items()]
         open(a.env_file, "w").write("\n".join(lines) + "\n")
-        print(f"{key} enregistré dans {a.env_file}.")
+        print(f"{', '.join(values)} enregistrés dans {a.env_file}.")
 
 
 if __name__ == "__main__":
