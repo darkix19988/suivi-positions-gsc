@@ -78,6 +78,21 @@ def load(c, kind, name, rows, partition=None):
         c.update_table(t, ["time_partitioning", "expires"])
 
 
+def replace_days(c, kind, name, rows, start, end):
+    """Remplace les jours start → end : un seul chargement dans une table tampon, puis suppression et insertion en une
+    requête (la suppression de partitions entières ne lit rien, l'insertion ne lit que la table tampon)."""
+    from google.cloud import bigquery as b
+    stage = f"{c.project}.{DATASET}._stage_{kind}_{name}"
+    cfg = b.LoadJobConfig(schema=schema(kind), write_disposition="WRITE_TRUNCATE", source_format=b.SourceFormat.NEWLINE_DELIMITED_JSON)
+    if rows:
+        c.load_table_from_json(rows, stage, job_config=cfg).result()
+    query(c, f"""BEGIN TRANSACTION;
+                 DELETE FROM `{table(c, kind, name)}` WHERE date BETWEEN @a AND @b;
+                 {f"INSERT INTO `{table(c, kind, name)}` SELECT * FROM `{stage}`;" if rows else ""}
+                 COMMIT TRANSACTION;""", [("a", start), ("b", end)])
+    c.delete_table(stage, not_found_ok=True)
+
+
 def query(c, sql, params=()):
     from google.cloud import bigquery as b
     cfg = b.QueryJobConfig(maximum_bytes_billed=MAX_BYTES, query_parameters=[
@@ -126,12 +141,9 @@ def raw_fetch(s, days, today):
     else:
         start = min(today - timedelta(days=days), last + timedelta(days=1))
         for kind in ("pages", "queries"):
-            per = defaultdict(list)
-            for r in grab(kind, start, end):
-                per[r["date"]].append(r)
-            for d in sorted(per):
-                load(c, kind, name, per[d], partition=d)
-            print(f"[{name}] BigQuery {kind} : {sum(map(len, per.values()))} lignes réécrites sur {len(per)} jours ({start} → {end})")
+            rows = grab(kind, start, end)
+            replace_days(c, kind, name, rows, start, end)
+            print(f"[{name}] BigQuery {kind} : {len(rows)} lignes réécrites du {start} au {end}")
     print(f"[{name}] BigQuery collecte : {time.time() - t0:.0f} s")
 
 
@@ -163,24 +175,30 @@ def windows_sql(win):
     return "CASE " + " ".join(cases) + " END", params
 
 
+def windows_where(win):
+    """Filtre qui ne lit que les jours des fenêtres (élagage des partitions), pas tout ce qui les sépare."""
+    return "(" + " OR ".join(f"date BETWEEN @{lbl}_a AND @{lbl}_b" for lbl in win) + ")"
+
+
 def page_snaps(c, name, m, win):
     sc, sp = scope_sql(m)
     w, wp = windows_sql(win)
-    lo = min(a for a, _ in win.values())
     rows = query(c, f"""SELECT {w} AS win, page, SUM(clicks) c, SUM(impressions) i,
                           SAFE_DIVIDE(SUM(position * impressions), SUM(impressions)) p
-                        FROM `{table(c, 'pages', name)}` WHERE date >= @lo{sc} GROUP BY win, page HAVING win IS NOT NULL""",
-                 [("lo", lo)] + sp + wp)
+                        FROM `{table(c, 'pages', name)}` WHERE {windows_where(win)}{sc} GROUP BY win, page""",
+                 sp + wp)
     snaps = {lbl: {} for lbl in win}
     for r in rows:
         snaps[r["win"]][r["page"]] = [int(r["c"]), int(r["i"]), round(r["p"], 1) if r["p"] is not None else None]
     return snaps
 
 
-def section_series(c, name, m, secs, lf):
-    """Clics, impressions et position de chaque section, jour par jour, sur tout l'historique."""
+def section_series(c, name, m, secs, lf, since=None):
+    """Clics, impressions et position de chaque section, jour par jour : tout l'historique, ou depuis `since`."""
     sc, sp = scope_sql(m)
     cs, cp = case_sql(secs)
+    if since:
+        sc, sp = sc + " AND date >= @since", sp + [("since", since)]
     rows = query(c, f"""SELECT date, {cs} AS section, SUM(clicks) c, SUM(impressions) i,
                           SAFE_DIVIDE(SUM(position * impressions), SUM(impressions)) p
                         FROM `{table(c, 'pages', name)}` WHERE TRUE{sc} GROUP BY date, section""", sp + cp)
@@ -194,11 +212,10 @@ def section_queries(c, name, m, secs, win):
     sc, sp = scope_sql(m)
     cs, cp = case_sql(secs)
     w, wp = windows_sql(win)
-    lo = min(a for a, _ in win.values())
     rows = query(c, f"""SELECT {w} AS win, {cs} AS section, query, SUM(clicks) c, SUM(impressions) i,
                           SAFE_DIVIDE(SUM(position * impressions), SUM(impressions)) p
-                        FROM `{table(c, 'queries', name)}` WHERE date >= @lo{sc}
-                        GROUP BY win, section, query HAVING win IS NOT NULL""", [("lo", lo)] + sp + cp + wp)
+                        FROM `{table(c, 'queries', name)}` WHERE {windows_where(win)}{sc}
+                        GROUP BY win, section, query""", sp + cp + wp)
     out = {lbl: defaultdict(dict) for lbl in win}
     for r in rows:
         out[r["win"]][r["section"]][r["query"]] = [int(r["c"]), int(r["i"]), round(r["p"], 1) if r["p"] is not None else None]

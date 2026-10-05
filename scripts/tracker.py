@@ -352,7 +352,7 @@ def fetch(days, only=None):
                 write_json(pdir(name) / f"extras{suffix(mk)}.json", extras, compact=True)
                 try:  # un échec sur les dossiers ne bloque pas le suivi des positions
                     if bq.enabled():
-                        fetch_sections_bq(s, m, today, brand)
+                        fetch_sections_bq(s, m, today, brand, days)
                     else:
                         fetch_sections(tok, s, m, days, today, brand, scope)
                 except Exception as e:
@@ -664,7 +664,7 @@ def fetch_sections(tok, s, m, days, today, brand, scope=()):
     print(f"[{name}/{mk}] dossiers : " + ", ".join(f"{g} {len(x)}" for g, x in groupings.items()) + f" ({time.time() - t0:.0f} s)")
 
 
-def fetch_sections_bq(s, m, today, brand):
+def fetch_sections_bq(s, m, today, brand, days=10):
     """Dossiers d'un marché calculés dans BigQuery, sans aucun appel GSC : tout part des tables pages_ et queries_
     remplies par bq.raw_fetch. Séries sur tout l'historique et tops recalculés à chaque synchro."""
     name, mk = s["name"], m["code"]
@@ -683,12 +683,15 @@ def fetch_sections_bq(s, m, today, brand):
             pool[u] += v[0]
     groupings, info = detect_sections(pool, m, old.get("groupings") or {})
 
+    # Courbes : seulement les derniers jours si les sections n'ont pas changé, tout l'historique sinon
     path = pdir(name) / "sections.csv"
+    sig = lambda gr: {g: [(x["key"], x.get("rx")) for x in v] for g, v in (gr or {}).items()}
+    since = today - timedelta(days=days) if sig(groupings) == sig(old.get("groupings")) and path.exists() else None
     new_rows = []
     for g, secs in groupings.items():
-        for r in bq.section_series(c, name, m, secs, lf):
+        for r in bq.section_series(c, name, m, secs, lf, since):
             new_rows.append({**r, "site": name, "country": mk, "grouping": g, "segment": "total"})
-    keep = [r for r in read_csv(path) if r["country"] != mk]
+    keep = [r for r in read_csv(path) if r["country"] != mk or (since and r["date"] < str(since))]
     write_csv(path, F_SEC, keep + new_rows, lambda r: (r["country"], r["grouping"], r["section"], r["segment"], r["date"]))
 
     brand_re = re.compile(brand)
@@ -751,7 +754,7 @@ def sections_only(days, only=None):
             geo = [f("country", "equals", m["code"])] if m["code"] != ALL else []
             scope = geo + ([f("page", "contains", m["path"])] if m.get("path") else [])
             if bq.enabled():
-                fetch_sections_bq(s, m, today, brand)
+                fetch_sections_bq(s, m, today, brand, days)
             else:
                 fetch_sections(tok, s, m, days, today, brand, scope)
 
