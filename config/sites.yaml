@@ -1,9 +1,11 @@
 # Projets suivis (voir le README pour le détail des champs).
 
 sites:
-  - name: laponie
-    label: Laponie Récits
-    property: sc-domain:laponie-recits.com
+  - name: bathroomgraffiti
+    label: Bathroom Graffiti
+    property: sc-domain:bathroomgraffiti.com
     account: default
     owner: Théo
-    brand_regex: "laponie ?r[eé]cits?"
+    brand_regex: "bathroom ?graff?iti|bathroom ?grafiti|bathroomgraffiti"
+    countries:
+      - {code: fra, label: France}

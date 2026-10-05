@@ -42,7 +42,12 @@ def client(account):
                         client_secret=s.get("GSC_CLIENT_SECRET" + suffix) or s.get("GSC_CLIENT_SECRET"),
                         token_uri="https://oauth2.googleapis.com/token")
     c = bigquery.Client(project=os.environ["BQ_PROJECT"], credentials=creds, location=LOCATION)
-    c.create_dataset(f"{c.project}.{DATASET}", exists_ok=True)
+    ds = c.create_dataset(f"{c.project}.{DATASET}", exists_ok=True)
+    # Un dataset créé avant l'activation de la facturation garde l'expiration du bac à sable (60 jours) : on la retire,
+    # sinon BigQuery efface tout ce qui a plus de 60 jours
+    if ds.default_table_expiration_ms or ds.default_partition_expiration_ms:
+        ds.default_table_expiration_ms = ds.default_partition_expiration_ms = None
+        c.update_dataset(ds, ["default_table_expiration_ms", "default_partition_expiration_ms"])
     _clients[account] = c
     return c
 
@@ -67,6 +72,10 @@ def load(c, kind, name, rows, partition=None):
                           time_partitioning=b.TimePartitioning(field="date"), clustering_fields=["country", "page"])
     dest = table(c, kind, name) + (f"${partition.replace('-', '')}" if partition else "")
     c.load_table_from_json(rows, dest, job_config=cfg).result()
+    t = c.get_table(table(c, kind, name))
+    if t.time_partitioning.expiration_ms or t.expires:  # même raison : pas d'expiration héritée du bac à sable
+        t.time_partitioning.expiration_ms, t.expires = None, None
+        c.update_table(t, ["time_partitioning", "expires"])
 
 
 def query(c, sql, params=()):

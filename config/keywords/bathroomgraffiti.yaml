@@ -1,0 +1,44 @@
+# Mots-clés suivis pour Bathroom Graffiti, pré-remplis avec les 20 premières requêtes hors marque par clics (28 jours).
+# Voir config/keywords/celio.yaml pour le détail des champs.
+
+keywords:
+  - keyword: "bathroom grafitti"
+    page: https://bathroomgraffiti.com/
+  - keyword: "livre decoration"
+    page: https://bathroomgraffiti.com/collections/livre-deco
+  - keyword: "graffiti bathroom"
+    page: https://bathroomgraffiti.com/
+  - keyword: "assouline tel aviv"
+    page: https://bathroomgraffiti.com/products/livre-assouline-tel-aviv-spirit
+  - keyword: "livre deco"
+    page: https://bathroomgraffiti.com/collections/livre-deco
+  - keyword: "assouline judaisme"
+    page: https://bathroomgraffiti.com/products/livre-assouline-symbols-of-judaism
+  - keyword: "speks france"
+    page: https://bathroomgraffiti.com/products/jeu-billes-magnetiques-speks-unwind
+  - keyword: "bathroom graffitti"
+    page: https://bathroomgraffiti.com/
+  - keyword: "sonny angel halloween"
+    page: https://bathroomgraffiti.com/products/figurine-sonny-angel-serie-halloween
+  - keyword: "bathroom graphiti"
+    page: https://bathroomgraffiti.com/
+  - keyword: "bathroom graffity"
+    page: https://bathroomgraffiti.com/
+  - keyword: "plateau berbere"
+    page: https://bathroomgraffiti.com/collections/plateaux
+  - keyword: "plateau bazar de luxe"
+    page: https://bathroomgraffiti.com/collections/plateaux
+  - keyword: "squishy dumpling"
+    page: https://bathroomgraffiti.com/products/mini-lucky-bao-mystere?variant=53411551838550&country=FR&currency=EUR&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic
+  - keyword: "bougie anti connard"
+    page: https://bathroomgraffiti.com/products/bougie-humour-anti-connards
+  - keyword: "ichendorf milano"
+    page: https://bathroomgraffiti.com/collections/ichendorf
+  - keyword: "reveil design"
+    page: https://bathroomgraffiti.com/collections/reveils
+  - keyword: "vase que rico"
+    page: https://bathroomgraffiti.com/collections/que-rico
+  - keyword: "peluche sonny angel"
+    page: https://bathroomgraffiti.com/products/sonny-angel-peluche-lapin-rose
+  - keyword: "speks"
+    page: https://bathroomgraffiti.com/products/jeu-billes-magnetiques-speks-inspire
