@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Positions · datashake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="app.css?v=29">
+</head>
+<body>
+<div class="app" id="app">
+
+  <aside class="sidebar">
+    <a class="brand" href="#/">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.55607e-05 58.0954C1.60267e-05 52.6106 4.4208 48.1475 9.90547 48.1065C21.3582 48.0209 30.4387 48.0052 42.0095 48.0022C42.8693 48.002 43.7267 47.8913 44.5577 47.6708C44.5986 47.66 44.6395 47.6491 44.6804 47.6383C49.0177 46.4866 52.0055 42.5438 52.0049 38.0563L52.0013 10.0013C52.0006 4.47793 56.478 4.52739e-07 62.0013 9.5002e-07L90 3.47081e-06C95.5229 3.96805e-06 100 4.47716 100 10L100 42C100 47.5229 95.5229 52 90 52L58.2002 52L57.1548 52.0887C51.9782 52.5278 48 56.8577 48 62.0529L48 90C48 95.5228 43.5229 100 38 100L10 100C4.47716 100 1.23809e-05 95.5228 1.28501e-05 90L1.55607e-05 58.0954Z" fill="#101010"/></svg>
+      datashake <span class="product">Positions</span>
+    </a>
+
+    <nav class="nav">
+      <a href="#/" id="nav-portfolio"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Portefeuille</a>
+    </nav>
+    <div class="nav-label">Projets</div>
+    <nav class="nav" id="projects"></nav>
+
+    <div class="nav-label">Gérer</div>
+    <nav class="nav">
+      <a id="lnk-action" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>Ajouter une action</a>
+      <a id="lnk-kw" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Suivre un mot-clé</a>
+      <a id="lnk-project" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M12 11v5M9.5 13.5h5"/></svg>Nouveau projet</a>
+      <a id="lnk-sync" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Lancer une synchro</a>
+      <a id="lnk-doc" href="#/guide"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>Guide d'utilisation</a>
+    </nav>
+
+    <div class="sidebar-foot" id="sync"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menu-btn" aria-label="Menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="spacer"></div>
+      <button class="ctl filters-btn" id="filters-btn" hidden>Filtres</button>
+      <div class="filters" id="filters">
+        <select id="f-market" class="ctl" aria-label="Pays" hidden></select>
+        <span class="ctl-group" id="g-range" hidden>
+          <div class="seg" id="f-range" role="group" aria-label="Période">
+            <button data-v="7">7 j</button><button data-v="28">28 j</button><button data-v="90">90 j</button><button data-v="365">12 mois</button><button data-v="0">Tout</button><button data-v="custom" title="Dates au choix">Dates</button>
+          </div>
+          <span class="dates" id="d-range" hidden><input type="date" id="f-from" class="ctl" aria-label="Début"><input type="date" id="f-to" class="ctl" aria-label="Fin"></span>
+        </span>
+        <span class="ctl-group" id="g-cmp" hidden>
+          <select id="f-cmp" class="ctl" aria-label="Comparaison">
+            <option value="n1">vs N-1</option>
+            <option value="prev">vs période préc.</option>
+            <option value="custom">vs dates</option>
+            <option value="none">Sans comparaison</option>
+          </select>
+          <span class="dates" id="d-cmp" hidden><input type="date" id="f-cfrom" class="ctl" aria-label="Début de la comparaison"><input type="date" id="f-cto" class="ctl" aria-label="Fin de la comparaison"></span>
+        </span>
+        <label class="ctl switch" id="g-fresh" hidden title="Inclure les jours que la Search Console n'a pas encore consolidés"><input type="checkbox" id="f-fresh"><span>Jours provisoires</span></label>
+        <button class="ctl kbd-btn" id="cmdk-btn" aria-label="Rechercher"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><kbd>⌘K</kbd></button>
+      </div>
+    </header>
+    <nav class="subnav" id="subnav" hidden></nav>
+    <div class="content" id="view"><div class="loading">Chargement…</div></div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true"></aside>
+  <div class="cmdk" id="cmdk" hidden>
+    <div class="cmdk-box" role="dialog" aria-label="Recherche">
+      <input id="cmdk-q" placeholder="Projet, onglet ou mot-clé" autocomplete="off">
+      <div class="cmdk-list" id="cmdk-list"></div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=29"></script>
+</body>
+</html>

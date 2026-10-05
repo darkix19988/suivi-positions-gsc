@@ -1,0 +1,9 @@
+# Projets suivis (voir le README pour le détail des champs).
+
+sites:
+  - name: laponie
+    label: Laponie Récits
+    property: sc-domain:laponie-recits.com
+    account: default
+    owner: Théo
+    brand_regex: "laponie ?r[eé]cits?"

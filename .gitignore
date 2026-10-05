@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+.venv/
+*.json.key
+service-account*.json
+.env
+CONTEXTE.md
+REFS.md
+memory.md
+
+# Fichiers du dashboard : recalculés et publiés par .github/workflows/deploy.yml, jamais enregistrés dans le repo
+docs/data/
