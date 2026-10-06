@@ -23,6 +23,7 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-10-01,bathroomgraffiti,all,assouline judaisme,9.4,0,7,final
 2026-10-02,bathroomgraffiti,all,assouline judaisme,9.8,0,4,final
 2026-10-04,bathroomgraffiti,all,assouline judaisme,9,0,2,fresh
+2026-10-05,bathroomgraffiti,all,assouline judaisme,11,0,1,fresh
 2026-09-12,bathroomgraffiti,all,assouline tel aviv,5.8,3,18,final
 2026-09-13,bathroomgraffiti,all,assouline tel aviv,4.3,1,28,final
 2026-09-14,bathroomgraffiti,all,assouline tel aviv,4.4,2,49,final
@@ -44,8 +45,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,assouline tel aviv,4.3,0,3,final
 2026-10-01,bathroomgraffiti,all,assouline tel aviv,7.1,1,7,final
 2026-10-02,bathroomgraffiti,all,assouline tel aviv,8.2,0,8,final
-2026-10-03,bathroomgraffiti,all,assouline tel aviv,10,0,1,fresh
+2026-10-03,bathroomgraffiti,all,assouline tel aviv,10,0,1,final
 2026-10-04,bathroomgraffiti,all,assouline tel aviv,10.5,0,2,fresh
+2026-10-05,bathroomgraffiti,all,assouline tel aviv,6,0,3,fresh
 2025-06-12,bathroomgraffiti,all,bathroom graffitti,1,1,1,final
 2025-06-13,bathroomgraffiti,all,bathroom graffitti,1,1,1,final
 2025-06-14,bathroomgraffiti,all,bathroom graffitti,1,1,1,final
@@ -674,8 +676,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,bathroom grafitti,1,1,1,final
 2026-10-01,bathroomgraffiti,all,bathroom grafitti,1,1,1,final
 2026-10-02,bathroomgraffiti,all,bathroom grafitti,1,2,3,final
-2026-10-03,bathroomgraffiti,all,bathroom grafitti,1,0,2,fresh
+2026-10-03,bathroomgraffiti,all,bathroom grafitti,1,0,2,final
 2026-10-04,bathroomgraffiti,all,bathroom grafitti,1,1,1,fresh
+2026-10-05,bathroomgraffiti,all,bathroom grafitti,1,1,1,fresh
 2025-06-12,bathroomgraffiti,all,bathroom graphiti,1,2,2,final
 2025-06-16,bathroomgraffiti,all,bathroom graphiti,1,1,1,final
 2025-06-17,bathroomgraffiti,all,bathroom graphiti,1,1,3,final
@@ -1240,8 +1243,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-29,bathroomgraffiti,all,bougie anti connard,2.7,0,3,final
 2026-09-30,bathroomgraffiti,all,bougie anti connard,4,0,2,final
 2026-10-01,bathroomgraffiti,all,bougie anti connard,3.7,0,3,final
-2026-10-03,bathroomgraffiti,all,bougie anti connard,3.5,0,4,fresh
+2026-10-03,bathroomgraffiti,all,bougie anti connard,3.5,0,4,final
 2026-10-04,bathroomgraffiti,all,bougie anti connard,3.3,0,3,fresh
+2026-10-05,bathroomgraffiti,all,bougie anti connard,3.2,0,4,fresh
 2025-06-13,bathroomgraffiti,all,graffiti bathroom,1,0,1,final
 2025-06-16,bathroomgraffiti,all,graffiti bathroom,1,1,1,final
 2025-06-17,bathroomgraffiti,all,graffiti bathroom,9,0,1,final
@@ -1578,8 +1582,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-29,bathroomgraffiti,all,graffiti bathroom,1,0,1,final
 2026-09-30,bathroomgraffiti,all,graffiti bathroom,1,2,2,final
 2026-10-02,bathroomgraffiti,all,graffiti bathroom,1,2,3,final
-2026-10-03,bathroomgraffiti,all,graffiti bathroom,1,2,2,fresh
+2026-10-03,bathroomgraffiti,all,graffiti bathroom,1,2,2,final
 2026-10-04,bathroomgraffiti,all,graffiti bathroom,1,0,1,fresh
+2026-10-05,bathroomgraffiti,all,graffiti bathroom,1,1,1,fresh
 2025-06-12,bathroomgraffiti,all,ichendorf milano,9.8,0,37,final
 2025-06-13,bathroomgraffiti,all,ichendorf milano,13.1,0,20,final
 2025-06-14,bathroomgraffiti,all,ichendorf milano,10.6,0,24,final
@@ -2058,8 +2063,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,ichendorf milano,4.5,0,20,final
 2026-10-01,bathroomgraffiti,all,ichendorf milano,5,1,25,final
 2026-10-02,bathroomgraffiti,all,ichendorf milano,6.7,0,22,final
-2026-10-03,bathroomgraffiti,all,ichendorf milano,4.3,0,21,fresh
+2026-10-03,bathroomgraffiti,all,ichendorf milano,4.3,0,21,final
 2026-10-04,bathroomgraffiti,all,ichendorf milano,5.1,0,24,fresh
+2026-10-05,bathroomgraffiti,all,ichendorf milano,7.4,0,13,fresh
 2025-06-12,bathroomgraffiti,all,livre deco,4.1,0,10,final
 2025-06-13,bathroomgraffiti,all,livre deco,4.4,0,13,final
 2025-06-14,bathroomgraffiti,all,livre deco,3.2,1,20,final
@@ -2538,8 +2544,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,livre deco,3.3,0,18,final
 2026-10-01,bathroomgraffiti,all,livre deco,2.7,0,11,final
 2026-10-02,bathroomgraffiti,all,livre deco,3.5,0,24,final
-2026-10-03,bathroomgraffiti,all,livre deco,4.2,0,28,fresh
+2026-10-03,bathroomgraffiti,all,livre deco,4.2,0,28,final
 2026-10-04,bathroomgraffiti,all,livre deco,4.6,0,18,fresh
+2026-10-05,bathroomgraffiti,all,livre deco,6.8,1,12,fresh
 2025-06-12,bathroomgraffiti,all,livre decoration,6.2,1,20,final
 2025-06-13,bathroomgraffiti,all,livre decoration,5.4,0,31,final
 2025-06-14,bathroomgraffiti,all,livre decoration,6.9,0,32,final
@@ -3018,8 +3025,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,livre decoration,2.6,2,25,final
 2026-10-01,bathroomgraffiti,all,livre decoration,3.3,0,23,final
 2026-10-02,bathroomgraffiti,all,livre decoration,2.4,0,21,final
-2026-10-03,bathroomgraffiti,all,livre decoration,3.1,0,43,fresh
+2026-10-03,bathroomgraffiti,all,livre decoration,3.1,0,43,final
 2026-10-04,bathroomgraffiti,all,livre decoration,2.4,2,50,fresh
+2026-10-05,bathroomgraffiti,all,livre decoration,4.2,0,15,fresh
 2025-06-12,bathroomgraffiti,all,peluche sonny angel,2.4,0,5,final
 2025-06-13,bathroomgraffiti,all,peluche sonny angel,2,0,3,final
 2025-06-14,bathroomgraffiti,all,peluche sonny angel,2.2,0,4,final
@@ -3883,8 +3891,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,plateau bazar de luxe,4,0,1,final
 2026-10-01,bathroomgraffiti,all,plateau bazar de luxe,5,0,1,final
 2026-10-02,bathroomgraffiti,all,plateau bazar de luxe,6,0,3,final
-2026-10-03,bathroomgraffiti,all,plateau bazar de luxe,3.7,0,3,fresh
+2026-10-03,bathroomgraffiti,all,plateau bazar de luxe,3.7,0,3,final
 2026-10-04,bathroomgraffiti,all,plateau bazar de luxe,3.2,1,5,fresh
+2026-10-05,bathroomgraffiti,all,plateau bazar de luxe,3,0,1,fresh
 2025-06-12,bathroomgraffiti,all,plateau berbere,4.9,0,11,final
 2025-06-13,bathroomgraffiti,all,plateau berbere,4.5,0,14,final
 2025-06-14,bathroomgraffiti,all,plateau berbere,4.8,0,9,final
@@ -4362,8 +4371,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,plateau berbere,3.6,0,5,final
 2026-10-01,bathroomgraffiti,all,plateau berbere,9.9,0,7,final
 2026-10-02,bathroomgraffiti,all,plateau berbere,2.1,0,7,final
-2026-10-03,bathroomgraffiti,all,plateau berbere,1.9,1,7,fresh
+2026-10-03,bathroomgraffiti,all,plateau berbere,1.9,1,7,final
 2026-10-04,bathroomgraffiti,all,plateau berbere,2.3,0,7,fresh
+2026-10-05,bathroomgraffiti,all,plateau berbere,6,0,2,fresh
 2025-09-22,bathroomgraffiti,all,reveil design,1,0,1,final
 2025-10-06,bathroomgraffiti,all,reveil design,3,0,1,final
 2026-01-05,bathroomgraffiti,all,reveil design,19,0,1,final
@@ -4494,8 +4504,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,reveil design,6.9,0,22,final
 2026-10-01,bathroomgraffiti,all,reveil design,7.0,0,20,final
 2026-10-02,bathroomgraffiti,all,reveil design,8,0,25,final
-2026-10-03,bathroomgraffiti,all,reveil design,9.6,0,8,fresh
+2026-10-03,bathroomgraffiti,all,reveil design,9.6,0,8,final
 2026-10-04,bathroomgraffiti,all,reveil design,7.6,0,41,fresh
+2026-10-05,bathroomgraffiti,all,reveil design,8.1,0,12,fresh
 2025-06-12,bathroomgraffiti,all,sonny angel halloween,1.3,0,3,final
 2025-06-15,bathroomgraffiti,all,sonny angel halloween,1.3,0,6,final
 2025-06-17,bathroomgraffiti,all,sonny angel halloween,1,0,3,final
@@ -4885,8 +4896,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,sonny angel halloween,1.2,0,18,final
 2026-10-01,bathroomgraffiti,all,sonny angel halloween,1.2,0,20,final
 2026-10-02,bathroomgraffiti,all,sonny angel halloween,1.1,1,20,final
-2026-10-03,bathroomgraffiti,all,sonny angel halloween,1,0,1,fresh
+2026-10-03,bathroomgraffiti,all,sonny angel halloween,1,0,1,final
 2026-10-04,bathroomgraffiti,all,sonny angel halloween,1.1,0,33,fresh
+2026-10-05,bathroomgraffiti,all,sonny angel halloween,1.1,0,15,fresh
 2025-06-12,bathroomgraffiti,all,speks,5,0,1,final
 2025-06-13,bathroomgraffiti,all,speks,6,0,1,final
 2025-06-14,bathroomgraffiti,all,speks,6.7,0,3,final
@@ -5365,8 +5377,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,speks,4.8,0,24,final
 2026-10-01,bathroomgraffiti,all,speks,4.2,1,21,final
 2026-10-02,bathroomgraffiti,all,speks,5.6,0,15,final
-2026-10-03,bathroomgraffiti,all,speks,5.2,1,33,fresh
+2026-10-03,bathroomgraffiti,all,speks,5.2,1,33,final
 2026-10-04,bathroomgraffiti,all,speks,5.9,1,17,fresh
+2026-10-05,bathroomgraffiti,all,speks,5,1,14,fresh
 2025-11-18,bathroomgraffiti,all,speks france,6.5,0,2,final
 2025-11-24,bathroomgraffiti,all,speks france,7,0,1,final
 2025-11-25,bathroomgraffiti,all,speks france,9,0,1,final
@@ -5601,7 +5614,7 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,speks france,3.5,2,2,final
 2026-10-01,bathroomgraffiti,all,speks france,3.5,0,2,final
 2026-10-02,bathroomgraffiti,all,speks france,3.5,0,2,final
-2026-10-03,bathroomgraffiti,all,speks france,3.7,1,3,fresh
+2026-10-03,bathroomgraffiti,all,speks france,3.7,1,3,final
 2026-05-23,bathroomgraffiti,all,squishy dumpling,1.5,0,2,final
 2026-06-22,bathroomgraffiti,all,squishy dumpling,2,0,1,final
 2026-06-24,bathroomgraffiti,all,squishy dumpling,2,0,1,final
@@ -5676,8 +5689,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-28,bathroomgraffiti,all,squishy dumpling,2,0,1,final
 2026-09-30,bathroomgraffiti,all,squishy dumpling,3.7,0,3,final
 2026-10-02,bathroomgraffiti,all,squishy dumpling,5.8,0,4,final
-2026-10-03,bathroomgraffiti,all,squishy dumpling,2.8,1,4,fresh
+2026-10-03,bathroomgraffiti,all,squishy dumpling,2.8,1,4,final
 2026-10-04,bathroomgraffiti,all,squishy dumpling,2.3,0,3,fresh
+2026-10-05,bathroomgraffiti,all,squishy dumpling,4,0,1,fresh
 2025-06-12,bathroomgraffiti,all,vase que rico,10,0,2,final
 2025-06-13,bathroomgraffiti,all,vase que rico,10.5,0,4,final
 2025-06-14,bathroomgraffiti,all,vase que rico,9.5,0,4,final
@@ -5985,8 +5999,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,all,vase que rico,2,1,3,final
 2026-10-01,bathroomgraffiti,all,vase que rico,3.3,1,3,final
 2026-10-02,bathroomgraffiti,all,vase que rico,2,0,4,final
-2026-10-03,bathroomgraffiti,all,vase que rico,1.2,1,6,fresh
+2026-10-03,bathroomgraffiti,all,vase que rico,1.2,1,6,final
 2026-10-04,bathroomgraffiti,all,vase que rico,2.2,0,4,fresh
+2026-10-05,bathroomgraffiti,all,vase que rico,3,0,1,fresh
 2026-09-10,bathroomgraffiti,fra,assouline judaisme,11,0,1,final
 2026-09-11,bathroomgraffiti,fra,assouline judaisme,3,0,4,final
 2026-09-12,bathroomgraffiti,fra,assouline judaisme,2.7,1,3,final
@@ -6011,6 +6026,7 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-10-01,bathroomgraffiti,fra,assouline judaisme,9.7,0,6,final
 2026-10-02,bathroomgraffiti,fra,assouline judaisme,10.3,0,3,final
 2026-10-04,bathroomgraffiti,fra,assouline judaisme,11,0,1,fresh
+2026-10-05,bathroomgraffiti,fra,assouline judaisme,11,0,1,fresh
 2026-09-12,bathroomgraffiti,fra,assouline tel aviv,2.8,3,12,final
 2026-09-13,bathroomgraffiti,fra,assouline tel aviv,4.1,1,26,final
 2026-09-14,bathroomgraffiti,fra,assouline tel aviv,3.6,2,45,final
@@ -6032,8 +6048,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,assouline tel aviv,4.3,0,3,final
 2026-10-01,bathroomgraffiti,fra,assouline tel aviv,7.2,1,6,final
 2026-10-02,bathroomgraffiti,fra,assouline tel aviv,8.1,0,7,final
-2026-10-03,bathroomgraffiti,fra,assouline tel aviv,10,0,1,fresh
+2026-10-03,bathroomgraffiti,fra,assouline tel aviv,10,0,1,final
 2026-10-04,bathroomgraffiti,fra,assouline tel aviv,10.5,0,2,fresh
+2026-10-05,bathroomgraffiti,fra,assouline tel aviv,6,0,3,fresh
 2025-06-12,bathroomgraffiti,fra,bathroom graffitti,1,1,1,final
 2025-06-13,bathroomgraffiti,fra,bathroom graffitti,1,1,1,final
 2025-06-14,bathroomgraffiti,fra,bathroom graffitti,1,1,1,final
@@ -6557,8 +6574,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-29,bathroomgraffiti,fra,bathroom grafitti,1,1,2,final
 2026-10-01,bathroomgraffiti,fra,bathroom grafitti,1,1,1,final
 2026-10-02,bathroomgraffiti,fra,bathroom grafitti,1,2,3,final
-2026-10-03,bathroomgraffiti,fra,bathroom grafitti,1,0,2,fresh
+2026-10-03,bathroomgraffiti,fra,bathroom grafitti,1,0,2,final
 2026-10-04,bathroomgraffiti,fra,bathroom grafitti,1,1,1,fresh
+2026-10-05,bathroomgraffiti,fra,bathroom grafitti,1,1,1,fresh
 2025-06-12,bathroomgraffiti,fra,bathroom graphiti,1,2,2,final
 2025-06-17,bathroomgraffiti,fra,bathroom graphiti,1,1,3,final
 2025-06-20,bathroomgraffiti,fra,bathroom graphiti,1,0,1,final
@@ -7060,8 +7078,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-29,bathroomgraffiti,fra,bougie anti connard,2.7,0,3,final
 2026-09-30,bathroomgraffiti,fra,bougie anti connard,4,0,2,final
 2026-10-01,bathroomgraffiti,fra,bougie anti connard,3.5,0,2,final
-2026-10-03,bathroomgraffiti,fra,bougie anti connard,3.7,0,3,fresh
+2026-10-03,bathroomgraffiti,fra,bougie anti connard,3.7,0,3,final
 2026-10-04,bathroomgraffiti,fra,bougie anti connard,4,0,1,fresh
+2026-10-05,bathroomgraffiti,fra,bougie anti connard,3.2,0,4,fresh
 2025-06-13,bathroomgraffiti,fra,graffiti bathroom,1,0,1,final
 2025-06-16,bathroomgraffiti,fra,graffiti bathroom,1,1,1,final
 2025-06-18,bathroomgraffiti,fra,graffiti bathroom,1,1,1,final
@@ -7356,8 +7375,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-29,bathroomgraffiti,fra,graffiti bathroom,1,0,1,final
 2026-09-30,bathroomgraffiti,fra,graffiti bathroom,1,2,2,final
 2026-10-02,bathroomgraffiti,fra,graffiti bathroom,1,2,3,final
-2026-10-03,bathroomgraffiti,fra,graffiti bathroom,1,2,2,fresh
+2026-10-03,bathroomgraffiti,fra,graffiti bathroom,1,2,2,final
 2026-10-04,bathroomgraffiti,fra,graffiti bathroom,1,0,1,fresh
+2026-10-05,bathroomgraffiti,fra,graffiti bathroom,1,1,1,fresh
 2025-06-12,bathroomgraffiti,fra,ichendorf milano,4.7,0,21,final
 2025-06-13,bathroomgraffiti,fra,ichendorf milano,4.2,0,13,final
 2025-06-14,bathroomgraffiti,fra,ichendorf milano,4.3,0,18,final
@@ -7836,8 +7856,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,ichendorf milano,4.1,0,14,final
 2026-10-01,bathroomgraffiti,fra,ichendorf milano,4.7,1,22,final
 2026-10-02,bathroomgraffiti,fra,ichendorf milano,4.7,0,19,final
-2026-10-03,bathroomgraffiti,fra,ichendorf milano,3.9,0,18,fresh
+2026-10-03,bathroomgraffiti,fra,ichendorf milano,3.9,0,18,final
 2026-10-04,bathroomgraffiti,fra,ichendorf milano,4.6,0,20,fresh
+2026-10-05,bathroomgraffiti,fra,ichendorf milano,4,0,11,fresh
 2025-06-12,bathroomgraffiti,fra,livre deco,3,0,7,final
 2025-06-13,bathroomgraffiti,fra,livre deco,4.1,0,11,final
 2025-06-14,bathroomgraffiti,fra,livre deco,3.2,1,20,final
@@ -8316,8 +8337,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,livre deco,3.3,0,18,final
 2026-10-01,bathroomgraffiti,fra,livre deco,2.7,0,11,final
 2026-10-02,bathroomgraffiti,fra,livre deco,3.2,0,22,final
-2026-10-03,bathroomgraffiti,fra,livre deco,3.8,0,26,fresh
+2026-10-03,bathroomgraffiti,fra,livre deco,3.8,0,26,final
 2026-10-04,bathroomgraffiti,fra,livre deco,4.1,0,16,fresh
+2026-10-05,bathroomgraffiti,fra,livre deco,6.5,1,11,fresh
 2025-06-12,bathroomgraffiti,fra,livre decoration,5.8,0,16,final
 2025-06-13,bathroomgraffiti,fra,livre decoration,5.3,0,28,final
 2025-06-14,bathroomgraffiti,fra,livre decoration,5.6,0,18,final
@@ -8796,8 +8818,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,livre decoration,2.6,2,25,final
 2026-10-01,bathroomgraffiti,fra,livre decoration,3.0,0,22,final
 2026-10-02,bathroomgraffiti,fra,livre decoration,2.4,0,21,final
-2026-10-03,bathroomgraffiti,fra,livre decoration,3.1,0,43,fresh
+2026-10-03,bathroomgraffiti,fra,livre decoration,3.1,0,43,final
 2026-10-04,bathroomgraffiti,fra,livre decoration,2.4,2,50,fresh
+2026-10-05,bathroomgraffiti,fra,livre decoration,4.2,0,15,fresh
 2025-06-12,bathroomgraffiti,fra,peluche sonny angel,2.8,0,4,final
 2025-06-13,bathroomgraffiti,fra,peluche sonny angel,2,0,3,final
 2025-06-14,bathroomgraffiti,fra,peluche sonny angel,2.7,0,3,final
@@ -9642,8 +9665,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,plateau bazar de luxe,4,0,1,final
 2026-10-01,bathroomgraffiti,fra,plateau bazar de luxe,5,0,1,final
 2026-10-02,bathroomgraffiti,fra,plateau bazar de luxe,6,0,3,final
-2026-10-03,bathroomgraffiti,fra,plateau bazar de luxe,3.7,0,3,fresh
+2026-10-03,bathroomgraffiti,fra,plateau bazar de luxe,3.7,0,3,final
 2026-10-04,bathroomgraffiti,fra,plateau bazar de luxe,3.2,1,5,fresh
+2026-10-05,bathroomgraffiti,fra,plateau bazar de luxe,3,0,1,fresh
 2025-06-12,bathroomgraffiti,fra,plateau berbere,5,0,9,final
 2025-06-13,bathroomgraffiti,fra,plateau berbere,4.4,0,12,final
 2025-06-14,bathroomgraffiti,fra,plateau berbere,4.8,0,8,final
@@ -10121,8 +10145,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,plateau berbere,3.6,0,5,final
 2026-10-01,bathroomgraffiti,fra,plateau berbere,9.9,0,7,final
 2026-10-02,bathroomgraffiti,fra,plateau berbere,2.1,0,7,final
-2026-10-03,bathroomgraffiti,fra,plateau berbere,1.9,1,7,fresh
+2026-10-03,bathroomgraffiti,fra,plateau berbere,1.9,1,7,final
 2026-10-04,bathroomgraffiti,fra,plateau berbere,2.3,0,7,fresh
+2026-10-05,bathroomgraffiti,fra,plateau berbere,2,0,1,fresh
 2025-09-22,bathroomgraffiti,fra,reveil design,1,0,1,final
 2025-10-06,bathroomgraffiti,fra,reveil design,3,0,1,final
 2026-01-05,bathroomgraffiti,fra,reveil design,19,0,1,final
@@ -10253,8 +10278,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,reveil design,6.6,0,17,final
 2026-10-01,bathroomgraffiti,fra,reveil design,6.6,0,18,final
 2026-10-02,bathroomgraffiti,fra,reveil design,8.0,0,22,final
-2026-10-03,bathroomgraffiti,fra,reveil design,8.8,0,6,fresh
+2026-10-03,bathroomgraffiti,fra,reveil design,8.8,0,6,final
 2026-10-04,bathroomgraffiti,fra,reveil design,7.7,0,36,fresh
+2026-10-05,bathroomgraffiti,fra,reveil design,8.1,0,11,fresh
 2025-06-12,bathroomgraffiti,fra,sonny angel halloween,1.3,0,3,final
 2025-06-15,bathroomgraffiti,fra,sonny angel halloween,1.3,0,6,final
 2025-06-17,bathroomgraffiti,fra,sonny angel halloween,1,0,3,final
@@ -10634,8 +10660,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,sonny angel halloween,1.2,0,18,final
 2026-10-01,bathroomgraffiti,fra,sonny angel halloween,1.2,0,20,final
 2026-10-02,bathroomgraffiti,fra,sonny angel halloween,1.1,1,20,final
-2026-10-03,bathroomgraffiti,fra,sonny angel halloween,1,0,1,fresh
+2026-10-03,bathroomgraffiti,fra,sonny angel halloween,1,0,1,final
 2026-10-04,bathroomgraffiti,fra,sonny angel halloween,1.1,0,33,fresh
+2026-10-05,bathroomgraffiti,fra,sonny angel halloween,1.1,0,15,fresh
 2025-06-14,bathroomgraffiti,fra,speks,6.7,0,3,final
 2025-06-15,bathroomgraffiti,fra,speks,4.5,0,2,final
 2025-06-16,bathroomgraffiti,fra,speks,7,0,1,final
@@ -11110,8 +11137,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,speks,4.5,0,22,final
 2026-10-01,bathroomgraffiti,fra,speks,4.2,1,21,final
 2026-10-02,bathroomgraffiti,fra,speks,5.6,0,14,final
-2026-10-03,bathroomgraffiti,fra,speks,5.2,1,33,fresh
+2026-10-03,bathroomgraffiti,fra,speks,5.2,1,33,final
 2026-10-04,bathroomgraffiti,fra,speks,5.9,1,17,fresh
+2026-10-05,bathroomgraffiti,fra,speks,4.7,1,13,fresh
 2025-11-18,bathroomgraffiti,fra,speks france,8,0,1,final
 2025-11-24,bathroomgraffiti,fra,speks france,7,0,1,final
 2025-11-25,bathroomgraffiti,fra,speks france,9,0,1,final
@@ -11339,7 +11367,7 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,speks france,3,1,1,final
 2026-10-01,bathroomgraffiti,fra,speks france,3.5,0,2,final
 2026-10-02,bathroomgraffiti,fra,speks france,3.5,0,2,final
-2026-10-03,bathroomgraffiti,fra,speks france,3.7,1,3,fresh
+2026-10-03,bathroomgraffiti,fra,speks france,3.7,1,3,final
 2026-06-22,bathroomgraffiti,fra,squishy dumpling,2,0,1,final
 2026-07-01,bathroomgraffiti,fra,squishy dumpling,2,0,1,final
 2026-07-08,bathroomgraffiti,fra,squishy dumpling,1,0,2,final
@@ -11403,8 +11431,9 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-25,bathroomgraffiti,fra,squishy dumpling,5.5,0,2,final
 2026-09-30,bathroomgraffiti,fra,squishy dumpling,3.7,0,3,final
 2026-10-02,bathroomgraffiti,fra,squishy dumpling,9,0,1,final
-2026-10-03,bathroomgraffiti,fra,squishy dumpling,3.5,0,2,fresh
+2026-10-03,bathroomgraffiti,fra,squishy dumpling,3.5,0,2,final
 2026-10-04,bathroomgraffiti,fra,squishy dumpling,2.3,0,3,fresh
+2026-10-05,bathroomgraffiti,fra,squishy dumpling,4,0,1,fresh
 2025-06-12,bathroomgraffiti,fra,vase que rico,10,0,2,final
 2025-06-13,bathroomgraffiti,fra,vase que rico,10.5,0,4,final
 2025-06-14,bathroomgraffiti,fra,vase que rico,9.5,0,4,final
@@ -11701,5 +11730,6 @@ date,site,country,query,position,clicks,impressions,data_state
 2026-09-30,bathroomgraffiti,fra,vase que rico,2,0,2,final
 2026-10-01,bathroomgraffiti,fra,vase que rico,3.3,1,3,final
 2026-10-02,bathroomgraffiti,fra,vase que rico,2,0,4,final
-2026-10-03,bathroomgraffiti,fra,vase que rico,1.2,1,6,fresh
+2026-10-03,bathroomgraffiti,fra,vase que rico,1.2,1,6,final
 2026-10-04,bathroomgraffiti,fra,vase que rico,2.2,0,4,fresh
+2026-10-05,bathroomgraffiti,fra,vase que rico,3,0,1,fresh
