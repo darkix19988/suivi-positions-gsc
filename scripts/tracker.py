@@ -406,7 +406,7 @@ def build(run_id=None, runs=None, fresh=False):
     t0 = time.time()
     run_id = run_id or uuid.uuid4().hex[:12]
     runs = runs or []
-    b0 = bq.usage["bytes_billed"]
+    b0, j0 = bq.usage["bytes_billed"], bq.usage["jobs"]
     sites = load_sites()
     if not sites:
         print("Aucun projet dans config/sites.yaml")
@@ -428,7 +428,7 @@ def build(run_id=None, runs=None, fresh=False):
     version = hashlib.sha1(b"".join(f.read_bytes() for f in sorted(OUT.glob("*.json")))).hexdigest()[:12]
     write_json(OUT / "manifest.json", {"version": version, "generated_at": generated})
     runs.append({"run_id": run_id, "started_at": datetime.now(timezone.utc).isoformat(), "seconds": round(time.time() - t0, 1),
-                 "site": None, "step": "calcul", "ok": True, "bq_jobs": bq.usage["jobs"], "bq_bytes_billed": bq.usage["bytes_billed"] - b0,
+                 "site": None, "step": "calcul", "ok": True, "bq_jobs": bq.usage["jobs"] - j0, "bq_bytes_billed": bq.usage["bytes_billed"] - b0,
                  "detail": f"{len(sites)} projets, version {version}"})
     def log():
         try:
@@ -438,7 +438,7 @@ def build(run_id=None, runs=None, fresh=False):
     with ThreadPoolExecutor(max_workers=2) as ex:
         list(ex.map(lambda f: f(), [lambda: bq.state_put(upd), log]))
     print(f"Calcul : {len(sites)} projets en {time.time() - t0:.0f} s, {(bq.usage['bytes_billed'] - b0) / 1e6:.0f} Mo facturés "
-          f"(BigQuery, {bq.usage['jobs']} requêtes au total)")
+          f"(BigQuery, {bq.usage['jobs'] - j0} requêtes)")
 
 
 def build_batch(sites, W, state, generated, fresh):

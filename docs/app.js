@@ -7,6 +7,7 @@
 const CFG = window.APP_CONFIG || {};
 const REPO = CFG.repo || "darkix19988/suivi-positions-gsc";
 const DATA = (CFG.dataBase || "data/").replace(/\/?$/, "/");
+const BRAND = CFG.brand || "datashake", PRODUCT = CFG.product || "Positions";   // marque blanche (docs/config.js)
 let VER = "";   // version des données (manifest.json) : les fichiers ne sont retéléchargés que lorsqu'ils changent
 const GH = "https://github.com/" + REPO;
 // Palette catégorielle validée (ordre fixe par mot-clé sélectionné, jamais cyclée sur le rang).
@@ -182,7 +183,17 @@ function loadError() {
     <button class="btn" onclick="location.reload()">Réessayer</button></div>`;
 }
 
+function applyBrand() {
+  const b = document.querySelector(".brand");
+  if (!b) return;
+  [...b.childNodes].forEach(n => { if (n.nodeType === 3 && n.textContent.trim()) n.textContent = " " + BRAND + " "; });
+  const pr = b.querySelector(".product");
+  if (pr) pr.textContent = PRODUCT;
+  if (CFG.logo) { const svg = b.querySelector("svg"); if (svg) svg.outerHTML = `<img src="${esc(CFG.logo)}" alt="" width="22" height="22">`; }
+}
+
 async function load() {
+  applyBrand();
   const man = await fetch(DATA + "manifest.json", { cache: "no-store" }).then(r => r.ok ? r.json() : {}).catch(() => ({}));
   VER = man.version || String(Date.now());
   const r = await fetch(DATA + "index.json?v=" + VER).catch(() => null);
@@ -367,7 +378,7 @@ function renderChrome() {
   if (!P) {
     crumbs.innerHTML = route.site === "guide" ? "Guide d'utilisation" : (ui.who ? `Projets de ${esc(ui.who)}` : "Portefeuille");
     $("subnav").hidden = true;
-    document.title = `${route.site === "guide" ? "Guide" : "Portefeuille"} · Positions · datashake`;
+    document.title = `${route.site === "guide" ? "Guide" : "Portefeuille"} · ${PRODUCT} · ${BRAND}`;
     syncTopbar();
     return;
   }
@@ -378,7 +389,7 @@ function renderChrome() {
   $("subnav").innerHTML = VIEWS.map(([v, l]) => `<a href="#/${P.name}/${v}" class="${view === v ? "active" : ""}${v === "a-traiter" ? " last" : ""}">${l}${
     v === "a-traiter" && n ? ` <span class="badge ${P.alerts.some(a => a.severity === "critique") ? "ko" : "warn"}">${n}</span>` : ""}${
     v === "actions" && P.actions.length ? ` <span class="badge">${P.actions.length}</span>` : ""}</a>`).join("");
-  document.title = `${P.label} · ${vlabel} · Positions`;
+  document.title = `${P.label} · ${vlabel} · ${PRODUCT}`;
   syncTopbar();
 }
 
@@ -1627,7 +1638,7 @@ function renderReport() {
           : '<p class="muted">Aucune action consignée ce mois-ci.</p>')}
       ${sec("vigilance", "Points de vigilance du mois", vig.length ? vig.slice(0, 12).map(e => `<div class="feed-row">${sevTag(e.severity)}<span class="light" style="min-width:56px">${fmtDate(e.date)}</span><b>${esc(e.keyword || path(e.page) || "")}</b><span class="muted">${esc(e.text)}</span></div>`).join("") : '<p class="muted">Aucune alerte ce mois-ci.</p>')}
       ${sec("suite", "Prochaines étapes", `<div class="editable next" contenteditable="true" id="r-next" data-placeholder="Écris ici les prochaines étapes.">${esc(saved.next || "")}</div>`)}
-      <div class="footer"><div>datashake · Rapport SEO · ${esc(P.label)}</div><div>${fmtDateL(new Date().toISOString().slice(0, 10))}</div></div>
+      <div class="footer"><div>${esc(BRAND)} · Rapport SEO · ${esc(P.label)}</div><div>${fmtDateL(new Date().toISOString().slice(0, 10))}</div></div>
     </div>`;
   $("month").onchange = e => { ui.month = e.target.value; renderReport(); };
   menuToggle("blocks-btn");
