@@ -1,0 +1,137 @@
+name: Synchro et publication
+
+# Un seul workflow : collecte GSC → BigQuery, calcul du dashboard depuis BigQuery, publication du site statique (dist/).
+# Les données ne sont jamais enregistrées dans le repo (BigQuery est la source) : aucun commit quotidien.
+#
+# Déclencheurs :
+# - planifié : la file de GitHub retarde souvent les tâches planifiées de plusieurs heures (6 h 30 mesurées en octobre 2026),
+#   d'où un premier passage la veille au soir et un rattrapage le matin, ignoré si la synchro du soir a réussi ;
+# - push : une modification de config/ ne collecte que les projets touchés, une modification du code ne fait que recalculer
+#   et republier (aucun appel GSC) ;
+# - manuel : mode sync (collecte + calcul) ou build (calcul seul), projet et nombre de jours au choix ;
+# - formulaires (issues.yml) : lancent ce workflow sur le projet concerné.
+
+on:
+  schedule:
+    - cron: "17 23 * * *"
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "sync = collecte + calcul, build = calcul seul"
+        type: choice
+        options: [sync, build]
+        default: sync
+      days:
+        description: "Nombre de jours à (re)récupérer"
+        default: "10"
+      site:
+        description: "Projets à collecter, séparés par des virgules (vide = tous)"
+        default: ""
+  push:
+    branches: [main]
+    paths:
+      - "config/**"
+      - "docs/**"
+      - "scripts/**"
+      - "requirements.txt"
+      - ".github/workflows/sync.yml"
+
+permissions:
+  contents: read
+  id-token: write      # connexion à BigQuery sans clé (Workload Identity Federation)
+  pages: write
+
+concurrency:
+  group: tracker
+  cancel-in-progress: false
+
+env:
+  BQ_PROJECT: ${{ vars.BQ_PROJECT }}
+  BQ_LOCATION: ${{ vars.BQ_LOCATION }}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      publish: ${{ steps.go.outputs.done }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Compte de service suivi-positions-bq : droits BigQuery sur le dataset gsc uniquement, aucun accès à la Search Console
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/973909757327/locations/global/workloadIdentityPools/github/providers/github-oidc
+          service_account: suivi-positions-bq@ds-suivi-positions-gsc.iam.gserviceaccount.com
+
+      - name: Choix du travail
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          MODE: ${{ github.event.inputs.mode }}
+          DAYS: ${{ github.event.inputs.days }}
+          SITE: ${{ github.event.inputs.site }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = "schedule" ]; then
+            cmd="sync --skip-if-fresh 12"
+          elif [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ "$MODE" = "build" ]; then cmd="build"; else cmd="sync --days ${DAYS:-10}${SITE:+ --site $SITE}"; fi
+          else
+            sites=""
+            if git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then sites=$(python scripts/tracker.py changed "$BEFORE"); fi
+            if [ -n "$sites" ]; then cmd="sync --site $sites"; else cmd="build"; fi
+          fi
+          echo "Commande : $cmd"
+          echo "cmd=$cmd" >> "$GITHUB_OUTPUT"
+
+      - name: Synchro ou calcul
+        id: go
+        env:
+          GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
+          GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
+          GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
+          # Comptes supplémentaires (scripts/oauth_login.py --label <nom>) : ajouter une ligne par compte, par ex.
+          # GSC_REFRESH_TOKEN_PIERRE: ${{ secrets.GSC_REFRESH_TOKEN_PIERRE }}
+        run: |
+          python scripts/tracker.py ${{ steps.plan.outputs.cmd }}
+          case "${{ steps.plan.outputs.cmd }}" in build*) echo "done=1" >> "$GITHUB_OUTPUT";; esac
+
+      - name: Digest Slack
+        if: github.event_name == 'schedule' && steps.go.outputs.done == '1'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python scripts/tracker.py notify
+
+      - name: Site statique (dist/)
+        if: steps.go.outputs.done == '1'
+        run: python scripts/publish.py
+
+      - uses: actions/configure-pages@v5
+        if: steps.go.outputs.done == '1'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.go.outputs.done == '1'
+        with:
+          path: dist
+
+  deploy:
+    needs: run
+    if: needs.run.outputs.publish == '1'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

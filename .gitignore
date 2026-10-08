@@ -8,5 +8,7 @@ CONTEXTE.md
 REFS.md
 memory.md
 
-# Fichiers du dashboard : recalculés et publiés par .github/workflows/deploy.yml, jamais enregistrés dans le repo
+# Données : BigQuery est la source. Fichiers du dashboard recalculés et publiés par .github/workflows/sync.yml
 docs/data/
+dist/
+data/

@@ -8,6 +8,7 @@ permissions:
   contents: write
   issues: write
   actions: write
+  id-token: write      # BigQuery (état de l'indexation) par Workload Identity Federation
 
 concurrency:
   group: tracker
@@ -36,6 +37,11 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/973909757327/locations/global/workloadIdentityPools/github/providers/github-oidc
+          service_account: suivi-positions-bq@ds-suivi-positions-gsc.iam.gserviceaccount.com
+
       - name: Appliquer le formulaire
         id: apply
         run: |
@@ -63,6 +69,8 @@ jobs:
         id: inspect
         if: steps.apply.outputs.kind == 'inspection'
         env:
+          BQ_PROJECT: ${{ vars.BQ_PROJECT }}
+          BQ_LOCATION: ${{ vars.BQ_LOCATION }}
           GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
           GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
           GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
@@ -78,22 +86,23 @@ jobs:
         run: |
           git config user.name "suivi-positions-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add config data
+          git add config
           git diff --cached --quiet || git commit -m "$TITLE (#${{ github.event.issue.number }})"
           git pull --rebase
           git push
 
+      # Un commit fait avec le jeton du workflow ne déclenche pas d'autre workflow : on lance la synchro explicitement
       - name: Lancer la synchro du projet (mot-clé, projet)
         if: steps.apply.outputs.kind == 'mot-cle' || steps.apply.outputs.kind == 'projet'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run daily.yml -R ${{ github.repository }} -f site=${{ steps.apply.outputs.site }} -f days=10
+        run: gh workflow run sync.yml -R ${{ github.repository }} -f mode=sync -f site=${{ steps.apply.outputs.site }} -f days=10
 
-      - name: Publier le dashboard (action, indexation)
+      - name: Recalculer et publier le dashboard (action, indexation)
         if: steps.apply.outputs.kind == 'action' || steps.apply.outputs.kind == 'inspection'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy.yml -R ${{ github.repository }}
+        run: gh workflow run sync.yml -R ${{ github.repository }} -f mode=build
 
       - name: Répondre et fermer
         if: always() && steps.apply.outcome != 'skipped'

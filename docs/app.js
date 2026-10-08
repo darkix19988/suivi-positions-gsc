@@ -3,7 +3,11 @@
 // Une seule définition de la position : la position du jour de référence (dernier jour disponible, ou dernier jour
 // définitif si les jours provisoires sont exclus). Les variations comparent deux jours.
 
-const REPO = "darkix19988/suivi-positions-gsc";
+// Réglages de l'instance (docs/config.js) : repo des formulaires et adresse des données, pour changer d'hébergeur sans toucher au code
+const CFG = window.APP_CONFIG || {};
+const REPO = CFG.repo || "darkix19988/suivi-positions-gsc";
+const DATA = (CFG.dataBase || "data/").replace(/\/?$/, "/");
+let VER = "";   // version des données (manifest.json) : les fichiers ne sont retéléchargés que lorsqu'ils changent
 const GH = "https://github.com/" + REPO;
 // Palette catégorielle validée (ordre fixe par mot-clé sélectionné, jamais cyclée sur le rang).
 const PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
@@ -11,7 +15,7 @@ const MAX_SEL = 8, NEUTRAL = "#9A9A9A", INK = "#101010", MUTED = "rgba(16,16,16,
 const NA = "-";
 const EXT = '<svg class="i" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 const PLUS = '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
-const VIEWS = [["mots-cles", "Mots-clés"], ["trafic", "Trafic du site"], ["actions", "Actions"], ["opportunites", "Opportunités"], ["rapport", "Rapport"], ["a-traiter", "À traiter"]];
+const VIEWS = [["mots-cles", "Mots-clés"], ["trafic", "Trafic du site"], ["actions", "Actions"], ["opportunites", "Opportunités"], ["cannibalisation", "Cannibalisation"], ["rapport", "Rapport"], ["a-traiter", "À traiter"]];
 const RANGE_VIEWS = ["mots-cles", "trafic"];
 const FRESH_VIEWS = ["mots-cles", "trafic", "opportunites"];
 const SEV = { critique: "Urgent", attention: "À surveiller", info: "Info" };
@@ -50,6 +54,12 @@ const DEF = {
   pagesActives: "Pages du dossier qui ont eu au moins une impression sur les 28 jours des tops (recalculés chaque lundi, dates affichées dans le détail du dossier). L'écart compare à N-1 ou à la période précédente.",
   part: "Part des clics du marché faite par le dossier sur la période.",
   repartition: "Mots-clés du dossier avec au moins 10 impressions sur 28 jours, par position moyenne. L'écart compare au même calcul sur la période de comparaison.",
+  cannib: "Requêtes hors marque (28 derniers jours) dont au moins deux pages du site font chacune 20 % des impressions ou plus, dans le top 30, avec au moins 100 impressions. C'est une cannibalisation probable : la Search Console ne dit pas si les pages apparaissent ensemble dans la même page de résultats (double présence, souvent positive) ou à tour de rôle (vraie concurrence). Pour les mots-clés suivis, le bloc « changent de page » le dit jour par jour.",
+  cannibDemande: "Impressions de la requête sur 28 jours, toutes pages du site.",
+  cannibDemandePart: "Part des impressions hors marque du site qui va à des requêtes cannibalisées, sur les 28 mêmes jours.",
+  cannibPiste: "Piste indicative selon le type des deux pages. C'est l'intention de la requête qui tranche : à vérifier avant d'agir.",
+  cannibPerte: "Impressions qui ne vont pas à la page principale (celle qui en fait le plus) : c'est la part de la demande dispersée. Les tableaux sont triés sur cette colonne.",
+  alternance: "Page qui fait le plus d'impressions sur le mot-clé, jour par jour (jours avec au moins 5 impressions). Un mot-clé apparaît ici quand la page en tête change au moins 3 fois en 28 jours : Google hésite entre plusieurs pages.",
   impact: "Clics par jour après l'action moins clics par jour avant, corrigés de la tendance des mots-clés non travaillés (groupe témoin), ramenés à un mois.",
 };
 const info = key => `<i class="info" title="${esc(DEF[key] || key)}">i</i>`;
@@ -96,7 +106,7 @@ const ui = {
   sel: {}, query: "", tags: new Set(), statuses: new Set(), view: "", openKw: null, pendingKw: null,
   sug: "all", sugSel: new Set(), month: null, kwMode: "kw", who: store.get("who") || "",
   chartOpen: store.get("chartOpen") === "1", metric: "position", trafSeg: "nonbrand",
-  trafMode: store.get("trafMode") || "global", secGroup: null, secSort: { key: "clicks", dir: -1 }, secOpen: null, secRef: null, secMetric: "clicks", secBrand: store.get("secBrand") || "nonbrand",
+  trafMode: store.get("trafMode") || "global", secGroup: null, secSort: { key: "clicks", dir: -1 }, secOpen: null, secRef: null, secMetric: "clicks", cannMode: "q", cannType: "", secBrand: store.get("secBrand") || "nonbrand",
   actMetric: store.get("actMetric") || "position", ovOpen: store.get("ovOpen2") === "1", ovChart: store.get("ovChart") || "pos",
 };
 
@@ -166,8 +176,18 @@ Chart.register({
 
 // ---------------------------------------------------------------- chargement & routage
 
+function loadError() {
+  document.getElementById("app").innerHTML = `<div class="load-error"><h1>Données indisponibles</h1>
+    <p>Le tableau de bord n'a pas trouvé ses données (${esc(DATA)}index.json). Elles sont recalculées à chaque synchro : réessaie dans quelques minutes.</p>
+    <button class="btn" onclick="location.reload()">Réessayer</button></div>`;
+}
+
 async function load() {
-  IDX = await (await fetch("data/index.json?v=" + Date.now())).json();
+  const man = await fetch(DATA + "manifest.json", { cache: "no-store" }).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  VER = man.version || String(Date.now());
+  const r = await fetch(DATA + "index.json?v=" + VER).catch(() => null);
+  if (!r || !r.ok) return loadError();
+  IDX = await r.json();
   bindChrome();
   window.addEventListener("hashchange", onRoute);
   onRoute();
@@ -182,7 +202,7 @@ async function project(name, market) {
   const key = name + "|" + market;
   if (!cache[key]) {
     const file = market === "all" ? name : `${name}.${market}`;
-    const r = await fetch(`data/${file}.json?v=` + Date.now());
+    const r = await fetch(`${DATA}${file}.json?v=${VER}`);
     if (!r.ok) throw new Error("introuvable");
     const p = await r.json();
     p.keywords.forEach(k => { k.map = new Map(k.s.map(x => [x[0], x])); k.smap = new Map(k.ss.map(x => [x[0], x])); k.alt = k.alt || {}; });
@@ -225,7 +245,7 @@ async function onRoute() {
 function renderView() {
   destroyCharts();
   if (!P) return renderPortfolio();
-  ({ "a-traiter": renderToday, "mots-cles": renderKeywords, trafic: renderTraffic, actions: renderActions, opportunites: renderOpps, rapport: renderReport }[route.view] || renderKeywords)();
+  ({ "a-traiter": renderToday, "mots-cles": renderKeywords, trafic: renderTraffic, actions: renderActions, opportunites: renderOpps, cannibalisation: renderCannibTab, rapport: renderReport }[route.view] || renderKeywords)();
   if (ui.pendingKw != null) { const i = ui.pendingKw; ui.pendingKw = null; openDrawer(i); }
 }
 
@@ -1155,7 +1175,7 @@ async function sectionsData() {
   const key = P.name + "|" + P.market + "|sections";
   if (!(key in cache)) {
     const file = P.market === "all" ? P.name : `${P.name}.${P.market}`;
-    const r = await fetch(`data/${file}.sections.json?v=` + Date.now());
+    const r = await fetch(`${DATA}${file}.sections.json?v=${VER}`);
     const d = r.ok ? await r.json() : null;
     if (d) d.groupings.forEach(g => g.sections.forEach(s => { s.map = new Map((s.series.total || []).map(x => [x[0], x])); }));
     cache[key] = d;
@@ -1418,6 +1438,110 @@ function renderOpps() {
   });
 }
 
+// Cannibalisation : requêtes dont les impressions se partagent entre plusieurs pages (28 jours, hors marque),
+// et mots-clés suivis dont la page en tête change d'un jour à l'autre
+const pageType = u => /\/blogs?\//.test(u) ? "blog" : /\/collections?\/|\/c\//.test(u) ? "collection" : /\/products?\/|\/p\//.test(u) ? "produit" : /\/pages\//.test(u) ? "page" : "autre";
+const TYPE_L = { blog: "Blog", collection: "Collection", produit: "Produit", page: "Page", autre: "Autre" };
+
+function leaderSwitches(k, R) {
+  let prev = null, n = 0, days = 0;
+  const pages = new Set();
+  calDates(shift(R.to, -27), R.to).forEach(d => {
+    const x = k.map.get(d), a = k.alt[d];
+    if (!a && !(x && x[3] >= 5)) return;
+    const lead = a ? a[0] : k.page;
+    pages.add(lead);
+    if (prev && lead !== prev) n++;
+    prev = lead; days++;
+  });
+  return { n, days, pages: [...pages] };
+}
+
+const pairKey = c => c[4].filter(x => x[2] >= 0.2 * c[1]).slice(0, 2).map(x => x[0]).sort().join(" | ");
+const typeOf = c => c[4].slice(0, 2).map(x => pageType(x[0])).sort().join(" / ");
+// Piste d'action selon le type des deux pages (indicative : l'intention de la requête tranche)
+function cannibHint(t) {
+  const [a, b] = t.split(" / ");
+  if (a === "blog" && b === "blog") return "Fusionner les articles ou différencier leurs angles, puis relier ou rediriger.";
+  if (t === "collection / produit") return "Souvent normal : la collection porte la requête générique, la fiche la requête précise. Vérifier que la bonne page sort.";
+  if (a === b && a === "produit") return "Fiches en doublon possible : vérifier canonique, variantes ou fiche épuisée.";
+  if (a === b && a === "collection") return "Collections proches : différencier titres et contenus, ou fusionner.";
+  if ([a, b].includes("blog") || [a, b].includes("page")) return "Contenu éditorial contre page commerciale : recentrer l'article sur l'informationnel et le faire pointer vers la page commerciale.";
+  return "Vérifier l'intention de la requête et choisir la page à pousser.";
+}
+
+// Onglet Cannibalisation : chiffres clés, graphiques, puis le détail par requête ou par paire
+function renderCannibTab() {
+  const R = ranges();
+  const all = P.cannib || [];
+  const per = P.extras_period || [shift(refDay(), -27), refDay()];
+  const nb = segSum("nonbrand", calDates(per[0], per[1]));
+  const impr = all.reduce((a, c) => a + c[1], 0), lost = all.reduce((a, c) => a + c[3], 0), clicks = all.reduce((a, c) => a + c[2], 0);
+  const pages = new Set(all.flatMap(c => c[4].filter(x => x[2] >= 0.2 * c[1]).map(x => x[0])));
+  const pairs = {};
+  all.forEach(c => { const k = pairKey(c); const x = pairs[k] = pairs[k] || { k, n: 0, lost: 0, type: typeOf(c) }; x.n++; x.lost += c[3]; });
+  const byType = {};
+  all.forEach(c => { const t = typeOf(c); const x = byType[t] = byType[t] || { n: 0, lost: 0 }; x.n++; x.lost += c[3]; });
+  const pageLoad = {};
+  all.forEach(c => c[4].filter(x => x[2] >= 0.2 * c[1]).forEach(x => { const y = pageLoad[x[0]] = pageLoad[x[0]] || { n: 0, lost: 0 }; y.n++; y.lost += c[3]; }));
+  const alt = P.keywords.map(k => leaderSwitches(k, R)).filter(x => x.n >= 3).length;
+  const pctNb = v => nb.impr ? fmt1(v / nb.impr * 100) + "<small> %</small>" : NA;
+  $("view").innerHTML = viewBar(`<span class="light ref-note">Requêtes hors marque, du ${fmtDateY(per[0])} au ${fmtDateY(per[1])}${P.market !== "all" ? " · " + esc(P.market_label) : ""} ${info("cannib")}</span>`)
+    + `<div class="card stats">
+      ${kpi("Requêtes cannibalisées", fmt(all.length), `<span>${fmt(Object.keys(pairs).length)} paires de pages</span>`)}
+      ${kpi("Demande concernée", pctNb(impr), `<span>${fmt(impr)} impressions hors marque</span>`, "cannibDemandePart")}
+      ${kpi("Impressions dispersées", pctNb(lost), `<span>${fmt(lost)} hors page principale</span>`, "cannibPerte")}
+      ${kpi("Clics sur ces requêtes", fmt(clicks), nb.clicks ? `<span>${fmt1(clicks / nb.clicks * 100)} % des clics hors marque</span>` : "")}
+      ${kpi("Mots-clés suivis instables", fmt(alt), `<span>sur ${fmt(P.keywords.length)} suivis</span>`, "alternance")}
+    </div>
+    <div class="grid-eq">
+      <div class="card"><div class="card-head"><h2>Par type de pages en concurrence</h2><span class="hint">impressions dispersées</span></div><div class="card-body"><div class="chart-box sm"><canvas id="c-cann-type"></canvas></div></div></div>
+      <div class="card"><div class="card-head"><h2>Pages les plus impliquées</h2><span class="hint">triées par impressions dispersées</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Page</th><th class="num">Requêtes</th><th class="num">Impr. dispersées</th></tr></thead><tbody>
+        ${Object.entries(pageLoad).sort((a, b) => b[1].lost - a[1].lost).slice(0, 8).map(([u, x]) => `<tr><td><div class="cann-p">${urlLink(u)} <span class="light">${TYPE_L[pageType(u)]}</span></div></td><td class="num">${fmt(x.n)}</td><td class="num">${fmt(x.lost)}</td></tr>`).join("") || '<tr><td colspan="3" class="empty">Rien à signaler.</td></tr>'}
+        </tbody></table></div></div>
+    </div>
+    <div id="cannib"></div>`;
+  const types = Object.entries(byType).sort((a, b) => b[1].lost - a[1].lost);
+  chart("c-cann-type", { type: "bar", data: { labels: types.map(([t]) => t.replace(/\b\w/g, m => m.toUpperCase())), datasets: [{ data: types.map(([, x]) => x.lost), backgroundColor: "#2a78d6", borderRadius: 4, maxBarThickness: 22 }] },
+    options: { indexAxis: "y", maintainAspectRatio: false, scales: { x: linScale(), y: { grid: { display: false }, ticks: { autoSkip: false } } },
+      plugins: { legend: { display: false }, tooltip: tooltip({ label: c => ` ${fmt(c.parsed.x)} impressions dispersées, ${types[c.dataIndex][1].n} requêtes` }) } } });
+  renderCannib(R);
+}
+
+function renderCannib(R) {
+  const all = P.cannib || [];
+  const types = [...new Set(all.map(typeOf))].sort();
+  const rows = all.filter(c => !ui.cannType || typeOf(c) === ui.cannType);
+  const alt = P.keywords.map(k => ({ k, sw: leaderSwitches(k, R) })).filter(x => x.sw.n >= 3).sort((a, b) => b.sw.n - a.sw.n);
+  const pagesCell = c => c[4].filter(x => x[2] >= 0.05 * c[1]).map((x, n) => `<div class="cann-p"><span class="badge">${Math.round(x[2] / c[1] * 100)} %</span> ${urlLink(x[0])} <span class="light">pos. ${fmt1(x[3])} · ${TYPE_L[pageType(x[0])]}</span></div>`).join("");
+  let body;
+  if (ui.cannMode === "pair") {
+    const g = {};
+    rows.forEach(c => { const k = pairKey(c); const x = g[k] = g[k] || { pages: k.split(" | "), n: 0, impr: 0, lost: 0, qs: [] }; x.n++; x.impr += c[1]; x.lost += c[3]; x.qs.push(c[0]); });
+    const pairs = Object.values(g).sort((a, b) => b.lost - a.lost);
+    body = `<table><thead><tr><th>Pages en concurrence</th><th class="num">Requêtes</th><th class="num def" title="${esc(DEF.cannibDemande)}">Impressions</th><th class="num def" title="${esc(DEF.cannibPerte)}">Hors page principale</th><th>Exemples</th><th class="def" title="${esc(DEF.cannibPiste)}">Piste</th></tr></thead><tbody>
+      ${pairs.slice(0, 50).map(x => `<tr><td>${x.pages.map(u => `<div class="cann-p">${urlLink(u)} <span class="light">${TYPE_L[pageType(u)]}</span></div>`).join("")}</td><td class="num">${fmt(x.n)}</td><td class="num">${fmt(x.impr)}</td><td class="num"><b>${fmt(x.lost)}</b></td><td class="light">${x.qs.slice(0, 4).map(esc).join(", ")}${x.qs.length > 4 ? "…" : ""}</td><td class="cann-hint">${esc(cannibHint(x.pages.map(pageType).sort().join(" / ")))}</td></tr>`).join("") || '<tr><td colspan="6" class="empty">Aucune paire.</td></tr>'}
+      </tbody></table>`;
+  } else {
+    body = `<table><thead><tr><th>Requête</th><th class="num def" title="${esc(DEF.cannibDemande)}">Impressions</th><th class="num">Clics</th><th>Pages (part des impressions, position moyenne)</th><th class="num def" title="${esc(DEF.cannibPerte)}">Hors page principale</th></tr></thead><tbody>
+      ${rows.slice(0, 100).map(c => `<tr><td><b>${esc(c[0])}</b></td><td class="num">${fmt(c[1])}</td><td class="num">${fmt(c[2])}</td><td>${pagesCell(c)}</td><td class="num"><b>${fmt(c[3])}</b></td></tr>`).join("") || '<tr><td colspan="5" class="empty">Aucune cannibalisation détectée.</td></tr>'}
+      </tbody></table>`;
+  }
+  $("cannib").innerHTML = `<div class="card">
+      <div class="toolbar"><div class="tabs" id="cann-m"><button data-m="q" class="${ui.cannMode !== "pair" ? "active" : ""}">Par requête</button><button data-m="pair" class="${ui.cannMode === "pair" ? "active" : ""}">Par paire de pages</button></div>
+        <select class="ctl" id="cann-t"><option value="">Tous les types de pages</option>${types.map(t => `<option ${t === ui.cannType ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+        <span class="spacer"></span><span class="light">${plural(rows.length, "requête", "requêtes")} · hors marque, 28 jours</span></div>
+      <div class="table-wrap">${body}</div></div>
+    <div class="card" style="margin-top:12px"><div class="card-head"><h2>Mots-clés suivis qui changent de page</h2><span class="hint def" title="${esc(DEF.alternance)}">28 jours au ${fmtDate(R.to)}</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Mot-clé</th><th>Page suivie</th><th class="num">Changements de page en tête</th><th>Pages qui alternent</th></tr></thead><tbody>
+      ${alt.map(x => `<tr class="click" data-alt="${x.k.i}"><td><b>${esc(x.k.keyword)}</b></td><td>${urlLink(x.k.page)}</td><td class="num"><b>${x.sw.n}</b> <span class="light">sur ${x.sw.days} j</span></td><td>${x.sw.pages.filter(u => u !== x.k.page).map(u => `<div class="cann-p">${urlLink(u)}</div>`).join("")}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">Aucun mot-clé suivi ne change de page en tête au moins 3 fois.</td></tr>'}
+      </tbody></table></div></div>`;
+  document.querySelectorAll("#cann-m button").forEach(b => b.onclick = () => { ui.cannMode = b.dataset.m; renderCannib(R); });
+  $("cann-t").onchange = e => { ui.cannType = e.target.value; renderCannib(R); };
+  document.querySelectorAll("tr[data-alt]").forEach(tr => tr.onclick = () => openDrawer(+tr.dataset.alt));
+}
+
 // ---------------------------------------------------------------- Rapport mensuel (figé sur son mois, données définitives)
 
 const REPORT_BLOCKS = [["synthese", "Synthèse"], ["chiffres", "Chiffres clés"], ["trafic", "Trafic 13 mois"], ["motscles", "Mots-clés suivis"],
@@ -1585,6 +1709,7 @@ function renderGuide() {
       <a href="#/${first}/mots-cles"><b>Mots-clés</b><span>L'onglet d'arrivée : vue d'ensemble (hausses, baisses, entrées et sorties du top, évolution globale, tags), puis la position du jour de chaque mot-clé. Par page : indexation et requêtes de chaque page suivie.</span></a>
       <a href="#/${first}/trafic"><b>Trafic du site</b><span>Clics hors marque, marque, total et impressions, comparés à la période choisie. Par dossier : le trafic de chaque dossier du site (détecté automatiquement), puis pour un dossier ses pages et mots-clés en hausse, en baisse, apparus et disparus sur 28 jours.</span></a>
       <a href="#/${first}/actions"><b>Actions</b><span>Journal des optimisations et leur effet mesuré.</span></a>
+      <a href="#/${first}/cannibalisation"><b>Cannibalisation</b><span>Requêtes hors marque dont les impressions se partagent entre plusieurs pages, paires de pages en concurrence avec une piste d'action, mots-clés suivis dont la page en tête change souvent.</span></a>
       <a href="#/${first}/opportunites"><b>Opportunités</b><span>Mots-clés suivis à pousser et requêtes à ajouter au suivi.</span></a>
       <a href="#/${first}/rapport"><b>Rapport</b><span>Rapport mensuel figé sur son mois, modifiable, imprimable en PDF.</span></a>
       <a href="#/${first}/a-traiter"><b>À traiter</b><span>Alertes et mouvements sur 7 jours, au dernier jour définitif.</span></a>

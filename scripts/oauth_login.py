@@ -1,4 +1,4 @@
-"""Connexion OAuth à la Search Console (et à BigQuery) avec le compte Google perso.
+"""Connexion OAuth à la Search Console d'un compte Google (lecture seule).
 
 Usage :
   python scripts/oauth_login.py chemin/vers/client_secret.json [--label pierre] [--env-file …/.claude/secrets/.env]
@@ -6,6 +6,9 @@ Usage :
 Ouvre le navigateur, on se connecte avec le compte qui a accès aux propriétés GSC,
 puis le script pose directement GSC_CLIENT_ID, GSC_CLIENT_SECRET et GSC_REFRESH_TOKEN
 dans les secrets GitHub du repo. Aucune valeur n'est affichée.
+
+BigQuery n'utilise pas ces jetons : il a sa propre identité (compte de service, voir README). `--bigquery` ajoute le scope
+BigQuery pour obtenir un jeton local (BQ_REFRESH_TOKEN) quand on lance l'outil sur son poste.
 
 Plusieurs comptes : --label <nom> pose GSC_REFRESH_TOKEN_<NOM> au lieu de GSC_REFRESH_TOKEN. Un projet utilise
 ce compte en déclarant `account: <nom>` dans config/sites.yaml. Sans --label, c'est le compte « default ».
@@ -22,7 +25,8 @@ import sys
 import requests
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly", "https://www.googleapis.com/auth/bigquery"]  # BigQuery : stockage du détail jour × page × requête
+SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
+BQ_SCOPE = "https://www.googleapis.com/auth/bigquery"   # option --bigquery : jeton local pour BigQuery
 
 
 def main():
@@ -31,9 +35,10 @@ def main():
     ap.add_argument("--repo", default="darkix19988/suivi-positions-gsc")
     ap.add_argument("--env-file", help="fichier de secrets local où enregistrer aussi le refresh token")
     ap.add_argument("--label", default="default", help="nom du compte (default = compte principal)")
+    ap.add_argument("--bigquery", action="store_true", help="ajoute le scope BigQuery (usage local)")
     a = ap.parse_args()
 
-    flow = InstalledAppFlow.from_client_secrets_file(a.client_secret, SCOPES)
+    flow = InstalledAppFlow.from_client_secrets_file(a.client_secret, SCOPES + ([BQ_SCOPE] if a.bigquery else []))
     # select_account force le choix du compte (sinon Google reprend la session ouverte),
     # consent garantit qu'un refresh token est renvoyé même si l'app a déjà été autorisée
     creds = flow.run_local_server(port=0, prompt="select_account consent", access_type="offline")

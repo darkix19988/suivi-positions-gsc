@@ -534,3 +534,10 @@ details.overview > summary .hint { display: flex; gap: 14px; flex-wrap: wrap; al
 tbody tr.click.selected td { background: var(--gray-1); }
 .sec-list .url { max-width: 260px; }
 #t-sec td .light { margin-top: 2px; }
+.cann-p { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; white-space: nowrap; padding: 2px 0; }
+.cann-p .url { max-width: 300px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+.cann-hint { font-size: 12px; color: var(--text-muted); min-width: 220px; max-width: 320px; white-space: normal; }
+
+.load-error { max-width: 520px; margin: 18vh auto; padding: 0 16px; text-align: center; }
+.load-error h1 { font-size: 22px; margin-bottom: 8px; }
+.load-error p { color: var(--text-muted); margin-bottom: 18px; }
