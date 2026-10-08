@@ -4,53 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
 <title>Positions · datashake</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23101010'/%3E%3Cpath transform='translate(22 22) scale(.56)' d='M0 58C0 52.6 4.4 48.1 9.9 48.1 21.4 48 30.4 48 42 48c.9 0 1.7-.1 2.6-.3 4.4-1.2 7.4-5.1 7.4-9.6V10C52 4.5 56.5 0 62 0h28c5.5 0 10 4.5 10 10v32c0 5.5-4.5 10-10 10H58.2l-1 .1C52 52.5 48 56.9 48 62v28c0 5.5-4.5 10-10 10H10C4.5 100 0 95.5 0 90Z' fill='%23fff'/%3E%3C/svg%3E">
+<script>
+  // Thème appliqué avant le premier rendu (pas de flash) : clair, sombre ou système
+  (function () { try { var t = localStorage.getItem("theme") || "light"; if (t === "system") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = t; if (localStorage.getItem("rail") === "1") document.documentElement.dataset.rail = "1"; } catch (e) {} })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="stylesheet" href="app.css?v=dev">
+<!-- Versions : scripts/publish.py remplace chaque ?v= par l'empreinte du fichier, aucun incrément manuel -->
+<script src="config.js?v=dev"></script>
+<script type="importmap">
+{ "imports": {
+  "@/util.js": "./js/util.js?v=dev",
+  "@/state.js": "./js/state.js?v=dev",
+  "@/defs.js": "./js/defs.js?v=dev",
+  "@/data.js": "./js/data.js?v=dev",
+  "@/charts.js": "./js/charts.js?v=dev",
+  "@/ui.js": "./js/ui.js?v=dev",
+  "@/chrome.js": "./js/chrome.js?v=dev",
+  "@/cmdk.js": "./js/cmdk.js?v=dev",
+  "@/drawer.js": "./js/drawer.js?v=dev",
+  "@/views/portfolio.js": "./js/views/portfolio.js?v=dev",
+  "@/views/today.js": "./js/views/today.js?v=dev",
+  "@/views/keywords.js": "./js/views/keywords.js?v=dev",
+  "@/views/traffic.js": "./js/views/traffic.js?v=dev",
+  "@/views/actions.js": "./js/views/actions.js?v=dev",
+  "@/views/opps.js": "./js/views/opps.js?v=dev",
+  "@/views/cannib.js": "./js/views/cannib.js?v=dev",
+  "@/views/report.js": "./js/views/report.js?v=dev",
+  "@/views/guide.js": "./js/views/guide.js?v=dev"
+} }
+</script>
+<link rel="modulepreload" href="./js/util.js?v=dev">
+<link rel="modulepreload" href="./js/state.js?v=dev">
+<link rel="modulepreload" href="./js/defs.js?v=dev">
+<link rel="modulepreload" href="./js/data.js?v=dev">
+<link rel="modulepreload" href="./js/charts.js?v=dev">
+<link rel="modulepreload" href="./js/ui.js?v=dev">
+<link rel="modulepreload" href="./js/chrome.js?v=dev">
+<link rel="modulepreload" href="./js/cmdk.js?v=dev">
+<link rel="modulepreload" href="./js/drawer.js?v=dev">
+<link rel="modulepreload" href="./js/views/portfolio.js?v=dev">
+<link rel="modulepreload" href="./js/views/today.js?v=dev">
+<link rel="modulepreload" href="./js/views/keywords.js?v=dev">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script type="module" src="./js/main.js?v=dev"></script>
 </head>
 <body>
+<a class="skip" href="#view">Aller au contenu</a>
 <div class="app" id="app">
 
-  <aside class="sidebar">
-    <a class="brand" href="#/">
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.55607e-05 58.0954C1.60267e-05 52.6106 4.4208 48.1475 9.90547 48.1065C21.3582 48.0209 30.4387 48.0052 42.0095 48.0022C42.8693 48.002 43.7267 47.8913 44.5577 47.6708C44.5986 47.66 44.6395 47.6491 44.6804 47.6383C49.0177 46.4866 52.0055 42.5438 52.0049 38.0563L52.0013 10.0013C52.0006 4.47793 56.478 4.52739e-07 62.0013 9.5002e-07L90 3.47081e-06C95.5229 3.96805e-06 100 4.47716 100 10L100 42C100 47.5229 95.5229 52 90 52L58.2002 52L57.1548 52.0887C51.9782 52.5278 48 56.8577 48 62.0529L48 90C48 95.5228 43.5229 100 38 100L10 100C4.47716 100 1.23809e-05 95.5228 1.28501e-05 90L1.55607e-05 58.0954Z" fill="#101010"/></svg>
-      datashake <span class="product">Positions</span>
+  <aside class="sidebar" aria-label="Navigation principale">
+    <a class="brand" href="#/" aria-label="Portefeuille">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M1.55607e-05 58.0954C1.60267e-05 52.6106 4.4208 48.1475 9.90547 48.1065C21.3582 48.0209 30.4387 48.0052 42.0095 48.0022C42.8693 48.002 43.7267 47.8913 44.5577 47.6708C44.5986 47.66 44.6395 47.6491 44.6804 47.6383C49.0177 46.4866 52.0055 42.5438 52.0049 38.0563L52.0013 10.0013C52.0006 4.47793 56.478 4.52739e-07 62.0013 9.5002e-07L90 3.47081e-06C95.5229 3.96805e-06 100 4.47716 100 10L100 42C100 47.5229 95.5229 52 90 52L58.2002 52L57.1548 52.0887C51.9782 52.5278 48 56.8577 48 62.0529L48 90C48 95.5228 43.5229 100 38 100L10 100C4.47716 100 1.23809e-05 95.5228 1.28501e-05 90L1.55607e-05 58.0954Z" fill="#101010"/></svg>
+      <span class="txt">datashake <span class="product">Positions</span></span>
     </a>
-
-    <nav class="nav">
-      <a href="#/" id="nav-portfolio"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Portefeuille</a>
-    </nav>
+    <button class="side-search" id="cmdk-btn" type="button" aria-label="Rechercher (⌘K)"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="txt">Rechercher</span><span class="kbd" id="cmdk-kbd">⌘K</span></button>
+    <nav class="nav" id="nav-main"></nav>
     <div class="nav-label">Projets</div>
-    <nav class="nav" id="projects"></nav>
-
-    <div class="nav-label">Gérer</div>
-    <nav class="nav">
-      <a id="lnk-action" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>Ajouter une action</a>
-      <a id="lnk-kw" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Suivre un mot-clé</a>
-      <a id="lnk-project" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M12 11v5M9.5 13.5h5"/></svg>Nouveau projet</a>
-      <a id="lnk-sync" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Lancer une synchro</a>
-      <a id="lnk-doc" href="#/guide"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>Guide d'utilisation</a>
-    </nav>
-
-    <div class="sidebar-foot" id="sync"></div>
+    <div class="who" id="who-wrap"></div>
+    <nav class="nav" id="projects" aria-label="Projets"></nav>
+    <div class="sidebar-foot">
+      <div id="sync"></div>
+      <div class="foot-tools">
+        <a class="btn ghost icon sm" id="guide-btn" href="#/guide" data-tip="Guide d'utilisation" aria-label="Guide d'utilisation"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg></a>
+        <button class="btn ghost icon sm" id="theme-btn" type="button" data-tip="Thème clair ou sombre" aria-label="Changer de thème"></button>
+        <button class="btn ghost icon sm" id="keys-btn" type="button" data-tip="Raccourcis clavier (?)" aria-label="Raccourcis clavier"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg></button>
+        <button class="btn ghost icon sm" id="rail-btn" type="button" data-tip="Réduire ou déplier le menu (m)" aria-label="Réduire le menu"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+      </div>
+    </div>
   </aside>
 
   <div class="main">
-    <header class="topbar">
-      <button class="menu-btn" id="menu-btn" aria-label="Menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <header class="topbar" id="topbar">
+      <button class="btn secondary icon menu-btn" id="menu-btn" type="button" aria-label="Ouvrir le menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <div class="crumbs" id="crumbs"></div>
-      <div class="spacer"></div>
-      <button class="ctl filters-btn" id="filters-btn" hidden>Filtres</button>
+      <button class="ctl filters-btn" id="filters-btn" type="button" hidden>Filtres</button>
       <div class="filters" id="filters">
         <select id="f-market" class="ctl" aria-label="Pays" hidden></select>
         <span class="ctl-group" id="g-range" hidden>
           <div class="seg" id="f-range" role="group" aria-label="Période">
-            <button data-v="7">7 j</button><button data-v="28">28 j</button><button data-v="90">90 j</button><button data-v="365">12 mois</button><button data-v="0">Tout</button><button data-v="custom" title="Dates au choix">Dates</button>
+            <button type="button" data-v="7">7 j</button><button type="button" data-v="28">28 j</button><button type="button" data-v="90">90 j</button><button type="button" data-v="365">12 mois</button><button type="button" data-v="0">Tout</button><button type="button" data-v="custom" data-tip="Dates au choix">Dates</button>
           </div>
-          <span class="dates" id="d-range" hidden><input type="date" id="f-from" class="ctl" aria-label="Début"><input type="date" id="f-to" class="ctl" aria-label="Fin"></span>
+          <span class="dates" id="d-range" hidden><input type="date" id="f-from" class="ctl" aria-label="Début de la période"><input type="date" id="f-to" class="ctl" aria-label="Fin de la période"></span>
         </span>
         <span class="ctl-group" id="g-cmp" hidden>
           <select id="f-cmp" class="ctl" aria-label="Comparaison">
@@ -61,25 +103,22 @@
           </select>
           <span class="dates" id="d-cmp" hidden><input type="date" id="f-cfrom" class="ctl" aria-label="Début de la comparaison"><input type="date" id="f-cto" class="ctl" aria-label="Fin de la comparaison"></span>
         </span>
-        <label class="ctl switch" id="g-fresh" hidden title="Inclure les jours que la Search Console n'a pas encore consolidés"><input type="checkbox" id="f-fresh"><span>Jours provisoires</span></label>
-        <button class="ctl kbd-btn" id="cmdk-btn" aria-label="Rechercher"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><kbd>⌘K</kbd></button>
+        <div class="menu-wrap" id="g-fresh" hidden><button class="btn secondary icon" id="opt-btn" type="button" data-tip="Options d'affichage" aria-label="Options d'affichage"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+          <div class="menu" role="menu"><label data-tip="Position du jour : inclure les 2 à 3 derniers jours que la Search Console n'a pas encore consolidés. Les cumuls de clics restent sur les jours définitifs."><input type="checkbox" id="f-fresh"> Inclure les jours provisoires</label></div></div>
+        <button class="btn secondary icon" id="share-btn" type="button" data-tip="Copier le lien de cette vue" aria-label="Copier le lien de cette vue"><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
       </div>
     </header>
-    <nav class="subnav" id="subnav" hidden></nav>
-    <div class="content" id="view"><div class="loading">Chargement…</div></div>
+    <div id="banner"></div>
+    <div id="phead"></div>
+    <nav class="subnav" id="subnav" aria-label="Onglets du projet" hidden></nav>
+    <main class="content" id="view" tabindex="-1"></main>
   </div>
 
   <div class="scrim" id="scrim"></div>
-  <aside class="drawer" id="drawer" aria-hidden="true"></aside>
-  <div class="cmdk" id="cmdk" hidden>
-    <div class="cmdk-box" role="dialog" aria-label="Recherche">
-      <input id="cmdk-q" placeholder="Projet, onglet ou mot-clé" autocomplete="off">
-      <div class="cmdk-list" id="cmdk-list"></div>
-    </div>
-  </div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true"></aside>
+  <div class="cmdk" id="cmdk" hidden></div>
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <div class="tip" id="tip" role="tooltip"></div>
 </div>
-
-<script src="config.js?v=dev"></script>
-<script src="app.js?v=dev"></script>
 </body>
 </html>

@@ -24,6 +24,12 @@ GitHub garde le code et la configuration (`config/`), BigQuery garde toutes les 
 
 L'état d'indexation (inspection d'URL) est vérifié automatiquement la première fois qu'une page est suivie, puis à la demande : bouton « Revérifier » dans le détail d'un mot-clé, « Vérifier toutes les pages » dans Mots-clés > Par page (formulaire `inspection.yml`), ou `python scripts/tracker.py inspect <projet> [--pages-file liste.txt]`. Une inspection prend environ 6 à 7 secondes par page, d'où l'abandon de la vérification quotidienne.
 
+## Front
+
+Application statique en modules ES sans étape de build (`docs/index.html`, `docs/app.css`, `docs/js/`), reprise de l'outil datashake : design system avec thèmes clair et sombre, portefeuille en cartes avec les alertes de tous les projets, état des filtres dans l'URL, recherche ⌘K avec commandes, raccourcis clavier, rapport imprimable. Les modules s'importent entre eux par la carte d'imports de `index.html` (`@/util.js`…), versionnée automatiquement à la publication.
+
+`docs/config.js` est le seul fichier à adapter pour une autre instance : repo des formulaires, adresse des données, marque (nom, produit, logo) pour une marque blanche.
+
 ## Synchro et publication
 
 Un seul workflow, `.github/workflows/sync.yml` : collecte GSC → BigQuery, calcul du dashboard depuis BigQuery, puis publication du site statique sur GitHub Pages (source « GitHub Actions »). Aucune donnée n'est commitée.
@@ -125,7 +131,7 @@ Chaque projet peut déclarer ses pays dans `config/sites.yaml` (`countries: [fra
 
 ## Données que la GSC ne montre pas
 
-La Search Console retire certaines données selon la façon dont on l'interroge (règles vérifiées le 2026-10-07 sur Bathroom Graffiti, voir `scripts/gsc.py`). Rien n'est perdu sans être mesuré : chaque fichier de marché porte un bloc `data_quality`, pas encore affiché dans le dashboard.
+La Search Console retire certaines données selon la façon dont on l'interroge (règles vérifiées le 2026-10-07 sur Bathroom Graffiti, voir `scripts/gsc.py`). Rien n'est perdu sans être mesuré : chaque fichier de marché porte un bloc `data_quality`, affiché sous les graphiques de Trafic du site (part masquée, marché limité à un dossier, jours tronqués) et en tête de Trafic > Par dossier pour un marché pays (part des clics du pays visible dans les dossiers).
 
 | Ce qui manque | Où | Ce que l'outil garde |
 |---|---|---|

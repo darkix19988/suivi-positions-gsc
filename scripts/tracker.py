@@ -1092,7 +1092,15 @@ def summary(p):
     out["n_keywords"] = len(p["keywords"])
     out["kw"] = [[g["i"], g["keyword"]] for g in p["keywords"]]   # recherche rapide du dashboard
     out["alerts"] = {s: sum(a["severity"] == s for a in p["alerts"]) for s in ("critique", "attention")}
+    # Alertes détaillées : bloc « Alertes de tous les projets » du portefeuille, sans charger chaque projet
+    out["alert_list"] = [{k: a[k] for k in ("severity", "type", "keyword", "i", "page", "text", "date", "impact")} for a in p["alerts"]]
+    out["moves_up"] = sum(1 for m in p["moves"] if m["d"] >= 0.5)
+    out["moves_down"] = sum(1 for m in p["moves"] if m["d"] <= -0.5)
+    out["actions_running"] = sum(1 for a in p["actions"] if 0 <= a.get("days_after", -1) < 28 and a.get("keywords"))
     if lf:
+        # Clics hors marque par semaine, 13 semaines complètes qui finissent au dernier jour définitif (tendance du portefeuille)
+        nbm = {x[0]: x[2] for x in p["segments"]["nonbrand"]}
+        out["spark"] = [sum(nbm.get(dshift(lf, -7 * w - j), 0) for j in range(7)) for w in range(12, -1, -1)]
         nb = p["segments"]["nonbrand"]
         win = lambda a, b: sum(x[2] for x in nb if a <= x[0] <= b)
         cur, prev = win(dshift(lf, -27), lf), win(dshift(lf, -55), dshift(lf, -28))
