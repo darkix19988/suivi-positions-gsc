@@ -77,7 +77,7 @@ def series(markets):
 
 # ---------------------------------------------------------------- fenêtres de 28 jours (une seule lecture de raw_queries)
 
-def windows(markets, pages, wanted, c_start, p_start, end, limits):
+def windows(markets, pages, wanted, c_start, p_start, end, limits, cov):
     """Une lecture des 56 derniers jours de raw_queries pour tous les projets, quatre résultats :
     - page_queries : requêtes de chaque page suivie, 28 j et 28 j précédents (60 premières par impressions) ;
     - suggestions : requêtes hors marque du marché (28 j, meilleure page, impressions des 28 j précédents) ;
@@ -87,11 +87,11 @@ def windows(markets, pages, wanted, c_start, p_start, end, limits):
         pg AS (SELECT JSON_VALUE(x,'$.site') site, JSON_VALUE(x,'$.page') page FROM UNNEST(JSON_QUERY_ARRAY(@j_pages)) x),
         w AS (SELECT JSON_VALUE(x,'$.site') site, JSON_VALUE(x,'$.query') query, JSON_VALUE(x,'$.page') page
               FROM UNNEST(JSON_QUERY_ARRAY(@j_wanted)) x),
-        base AS (SELECT m.site, m.market, m.country IS NULL AS all_countries, r.country, r.date >= @c_start AS cur, r.page, r.query,
+        base AS (SELECT m.site, m.market, m.country IS NULL AS all_countries, r.country, r.date, r.date >= @c_start AS cur, r.page, r.query,
                         r.clicks, r.impressions, r.position, (m.path IS NULL OR STRPOS(r.page, m.path) > 0) AS in_path,
                         REGEXP_CONTAINS(r.query, m.brand) AS is_brand
                  FROM {bq.T('raw_queries')} r JOIN m ON r.site = m.site AND (m.country IS NULL OR r.country = m.country)
-                 WHERE r.date BETWEEN @p_start AND @end AND r.site IN UNNEST(@sites)),
+                 WHERE r.date BETWEEN LEAST(@p_start, @cv_a) AND @end AND r.site IN UNNEST(@sites)),
         pq AS (SELECT b.site, b.market, IF(b.cur, 'cur', 'prev') win, b.page, b.query, SUM(b.clicks) c, SUM(b.impressions) i,
                       SAFE_DIVIDE(SUM(b.position * b.impressions), SUM(b.impressions)) p
                FROM base b JOIN pg ON pg.site = b.site AND pg.page = b.page GROUP BY 1, 2, 3, 4, 5
@@ -110,6 +110,8 @@ def windows(markets, pages, wanted, c_start, p_start, end, limits):
                FROM cp WHERE tot >= @cn_min GROUP BY 1, 2, 3
                HAVING COUNTIF(i >= @cn_share * tot AND p <= @cn_pos) >= 2
                QUALIFY ROW_NUMBER() OVER (PARTITION BY site, market ORDER BY grav DESC, query) <= @cn_max),
+        cv AS (SELECT b.site, b.market, SUM(b.clicks) c, SUM(b.impressions) i, COUNT(DISTINCT b.query) n
+               FROM base b WHERE b.in_path AND b.date BETWEEN @cv_a AND @cv_b GROUP BY 1, 2),
         ct AS (SELECT b.site, b.market, b.query, b.page, b.country, SUM(b.clicks) c, SUM(b.impressions) i,
                       SAFE_DIVIDE(SUM(b.position * b.impressions), SUM(b.impressions)) p
                FROM base b JOIN w ON w.site = b.site AND w.query = b.query AND w.page = b.page
@@ -117,15 +119,17 @@ def windows(markets, pages, wanted, c_start, p_start, end, limits):
         SELECT 'pq' kind, site, market, TO_JSON_STRING(STRUCT(win, page, query, c, i, p)) j FROM pq
         UNION ALL SELECT 'sg', site, market, TO_JSON_STRING(STRUCT(query, c, i, p, best, prev)) FROM sg
         UNION ALL SELECT 'cn', site, market, TO_JSON_STRING(STRUCT(query, tot_q AS tot, cl, grav, pages)) FROM cn
-        UNION ALL SELECT 'ct', site, market, TO_JSON_STRING(STRUCT(query, page, country, c, i, p)) FROM ct""",
+        UNION ALL SELECT 'ct', site, market, TO_JSON_STRING(STRUCT(query, page, country, c, i, p)) FROM ct
+        UNION ALL SELECT 'cv', site, market, TO_JSON_STRING(STRUCT(c, i, n)) FROM cv""",
         {"j_markets": markets_json(markets), "j_pages": bq.js(pages), "j_wanted": bq.js(wanted), "c_start": c_start,
-         "p_start": p_start, "end": end, "sites": sorted({m["site"] for m in markets}), **limits})
+         "p_start": p_start, "end": end, "cv_a": cov[0], "cv_b": cov[1], "sites": sorted({m["site"] for m in markets}), **limits})
 
 
 # ---------------------------------------------------------------- dossiers du site
 
 def _pages_src(key_p, key_q, where_p, where_q):
-    """Pages d'un marché : complètes (raw_pages) en tous pays sans dossier d'URL, sinon requêtes connues (raw_queries).
+    """Pages d'un marché : complètes (raw_pages) en tous pays sans dossier d'URL, sinon requêtes connues
+    (page_country_daily = raw_queries sans la requête, beaucoup plus légère).
     key_* : expression de regroupement (fenêtre ou jour) ; where_* : filtre de dates."""
     return f"""SELECT m.site, m.market, {key_p} AS win, p.page, SUM(p.clicks) c, SUM(p.impressions) i,
                       SUM(p.position * p.impressions) pw
@@ -133,7 +137,7 @@ def _pages_src(key_p, key_q, where_p, where_q):
                WHERE p.site IN UNNEST(@sites) AND {where_p} GROUP BY 1, 2, 3, 4
                UNION ALL
                SELECT m.site, m.market, {key_q}, q.page, SUM(q.clicks), SUM(q.impressions), SUM(q.position * q.impressions)
-               FROM {bq.T('raw_queries')} q JOIN m ON q.site = m.site AND NOT (m.country IS NULL AND m.path IS NULL)
+               FROM {bq.T('page_country_daily')} q JOIN m ON q.site = m.site AND NOT (m.country IS NULL AND m.path IS NULL)
                     AND {IN_MARKET.format(a='q')}
                WHERE q.site IN UNNEST(@sites) AND {where_q} GROUP BY 1, 2, 3, 4"""
 
@@ -239,18 +243,12 @@ def section_summary(markets, patterns, win, top, min_impr):
 
 
 def coverage(markets, a, b):
-    """Part des données visibles par marché sur la fenêtre [a, b] (28 derniers jours définitifs) : clics et impressions
-    complets du pays (raw_totals), clics des requêtes connues dans le périmètre du marché (raw_queries) et, pour un marché
-    sans dossier d'URL, clics complets par page (raw_pages en tous pays)."""
-    return bq.submit(f"""WITH {M},
-        tot AS (SELECT m.site, m.market, SUM(r.clicks) c, SUM(r.impressions) i FROM {bq.T('raw_totals')} r
-                JOIN m ON r.site = m.site AND (m.country IS NULL OR r.country = m.country)
-                WHERE r.date BETWEEN @a AND @b AND r.site IN UNNEST(@sites) GROUP BY 1, 2),
-        named AS (SELECT m.site, m.market, SUM(q.clicks) c, SUM(q.impressions) i, COUNT(DISTINCT q.query) n FROM {bq.T('raw_queries')} q
-                  JOIN m ON q.site = m.site AND {IN_MARKET.format(a='q')}
-                  WHERE q.date BETWEEN @a AND @b AND q.site IN UNNEST(@sites) GROUP BY 1, 2)
-        SELECT m.site, m.market, m.path IS NOT NULL has_path, tot.c tot_c, tot.i tot_i, named.c named_c, named.i named_i, named.n named_q
-        FROM m LEFT JOIN tot USING (site, market) LEFT JOIN named USING (site, market)""",
+    """Totaux complets du pays (raw_totals) de chaque marché sur [a, b] ; les clics des requêtes connues viennent de windows()."""
+    return bq.submit(f"""WITH {M}
+        SELECT m.site, m.market, m.path IS NOT NULL has_path, SUM(r.clicks) tot_c, SUM(r.impressions) tot_i
+        FROM m LEFT JOIN {bq.T('raw_totals')} r ON r.site = m.site AND (m.country IS NULL OR r.country = m.country)
+          AND r.date BETWEEN @a AND @b AND r.site IN UNNEST(@sites)
+        GROUP BY 1, 2, 3""",
         {"j_markets": markets_json(markets), "a": a, "b": b, "sites": sorted({m["site"] for m in markets})})
 
 

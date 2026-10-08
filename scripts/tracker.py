@@ -53,6 +53,7 @@ ALL = "all"                 # marché « tous pays »
 MIN_IMPR_DAY = 20           # impressions minimales d'un jour pour qu'une variation de position compte (alertes, mouvements)
 LOOKBACK = 7                # sans impression le jour J, on reprend la dernière position connue dans les 7 jours
 PROJECT_WORKERS = int(os.environ.get("PROJECT_WORKERS") or 3)
+BUILD_BATCH = int(os.environ.get("BUILD_BATCH") or 12)   # projets calculés ensemble (une requête BigQuery par besoin et par lot)
 
 # Dossiers du site (Trafic > Par dossier)
 SEC_MIN_PAGES = 5           # un premier segment d'URL devient un dossier à partir de 5 pages vues dans la GSC...
@@ -411,8 +412,39 @@ def build(run_id=None, runs=None, fresh=False):
         print("Aucun projet dans config/sites.yaml")
         return
     W = windows_for(today_utc())
-    lf_s = str(W["lf"])
     state = bq.state_get()
+    generated = datetime.now(timezone.utc).isoformat(timespec="minutes")
+    index = {"generated_at": generated, "google_updates": state.get(("", "google_updates")) or [], "projects": []}
+    OUT.mkdir(parents=True, exist_ok=True)
+    for old in OUT.glob("*.json"):
+        old.unlink()
+    upd = {}
+    # Projets traités par lots : chaque requête BigQuery couvre un lot (taille et coût bornés quel que soit le portefeuille)
+    for i in range(0, len(sites), BUILD_BATCH):
+        projects, u = build_batch(sites[i:i + BUILD_BATCH], W, state, generated, fresh)
+        index["projects"] += projects
+        upd.update(u)
+    write_json(OUT / "index.json", index)
+    version = hashlib.sha1(b"".join(f.read_bytes() for f in sorted(OUT.glob("*.json")))).hexdigest()[:12]
+    write_json(OUT / "manifest.json", {"version": version, "generated_at": generated})
+    runs.append({"run_id": run_id, "started_at": datetime.now(timezone.utc).isoformat(), "seconds": round(time.time() - t0, 1),
+                 "site": None, "step": "calcul", "ok": True, "bq_jobs": bq.usage["jobs"], "bq_bytes_billed": bq.usage["bytes_billed"] - b0,
+                 "detail": f"{len(sites)} projets, version {version}"})
+    def log():
+        try:
+            bq.log_runs(runs)
+        except Exception as e:  # le journal ne doit jamais bloquer la publication
+            print(f"journal des synchros : {e}")
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        list(ex.map(lambda f: f(), [lambda: bq.state_put(upd), log]))
+    print(f"Calcul : {len(sites)} projets en {time.time() - t0:.0f} s, {(bq.usage['bytes_billed'] - b0) / 1e6:.0f} Mo facturés "
+          f"(BigQuery, {bq.usage['jobs']} requêtes au total)")
+
+
+def build_batch(sites, W, state, generated, fresh):
+    """Calcul d'un lot de projets : lectures BigQuery (une requête par besoin pour tout le lot), puis fichiers du dashboard.
+    Renvoie les lignes du portefeuille et les mises à jour d'état."""
+    lf_s = str(W["lf"])
     mrows = market_rows(sites)
     want = [{"site": s["name"], "query": q, "page": p} for s in sites for q, p in wanted(s)]
     tpages = [{"site": s["name"], "page": p} for s in sites for p in tracked_pages(s)]
@@ -421,14 +453,14 @@ def build(run_id=None, runs=None, fresh=False):
     with ThreadPoolExecutor(max_workers=5) as ex:
         j_tr, j_se, j_wi, j_sn, j_cv = ex.map(lambda f: f(), [
             lambda: sql.tracked(mrows, want, W["qp_start"]), lambda: sql.series(mrows),
-            lambda: sql.windows(mrows, tpages, want, W["c_start"], W["p_start"], W["end"], LIMITS),
+            lambda: sql.windows(mrows, tpages, want, W["c_start"], W["p_start"], W["end"], LIMITS, W["cov"]),
             lambda: sql.page_snaps(mrows, W["sec"]), lambda: sql.coverage(mrows, *W["cov"])])
 
     # Dossiers : détection sur les pages vues (3 fenêtres), puis courbes et comparaisons dans BigQuery
     snaps = defaultdict(lambda: defaultdict(float))
     for r in bq.wait(j_sn):
         snaps[(r["site"], r["market"])][r["page"]] += r["c"] or 0
-    patterns, sec_meta, upd = [], {}, {}
+    patterns, sec_meta = [], {}
     for s in sites:
         last_ra = state.get((s["name"], "last_ra"))
         for m in markets(s):
@@ -479,8 +511,20 @@ def build(run_id=None, runs=None, fresh=False):
             kw_rows[k].append({**row, "query": r["k"]})
         else:
             site_rows[k].append({**row, "segment": r["kind"]})
+    # Ordre stable (le SQL ne garantit pas l'ordre des lignes) : même tri que les anciens CSV, pour départager les égalités
+    for d in pos_rows.values():
+        d.sort(key=lambda r: (r["keyword"], r["page"], r["date"]))
+    for d in qp_rows.values():
+        d.sort(key=lambda r: (r["query"], r["date"], r["page"]))
+    for d in kw_rows.values():
+        d.sort(key=lambda r: (r["query"], r["date"]))
+    for d in site_rows.values():
+        d.sort(key=lambda r: (r["segment"], r["date"]))
     win = sql.rows_json(j_wi)
     cov = {(r["site"], r["market"]): dict(r) for r in bq.wait(j_cv)}
+    for (kind, site, mk), lst in win.items():
+        if kind == "cv" and (site, mk) in cov:
+            cov[(site, mk)].update({"named_c": lst[0]["c"], "named_i": lst[0]["i"], "named_q": lst[0]["n"]})
     sec_series = defaultdict(lambda: defaultdict(list))
     for r in bq.wait(j_ss):
         d = str(r["date"])
@@ -491,12 +535,7 @@ def build(run_id=None, runs=None, fresh=False):
         for r in bq.wait(j_su):
             sec_sum[(r["site"], r["market"])][(r["grp"], r["section"], r["kind"], r["ref"])] = json.loads(r["j"])
 
-    generated = datetime.now(timezone.utc).isoformat(timespec="minutes")
-    updates = state.get(("", "google_updates")) or []
-    index = {"generated_at": generated, "google_updates": updates, "projects": []}
-    OUT.mkdir(parents=True, exist_ok=True)
-    for old in OUT.glob("*.json"):
-        old.unlink()
+    projects = []
     for s in sites:
         name = s["name"]
         ms, dm = markets(s), default_market(s)
@@ -508,7 +547,8 @@ def build(run_id=None, runs=None, fresh=False):
                       "splits": {"device": state.get((name, f"device|{m['code']}")) or []}}
             if m["code"] == ALL:
                 extras["splits"]["country"] = [[x["query"], x["page"], x["country"], x["c"], x["i"], round(x["p"], 1)]
-                                               for x in win.get(("ct", name, m["code"]), [])]
+                                               for x in sorted(win.get(("ct", name, m["code"]), []),
+                                                               key=lambda x: (-x["c"], -x["i"], x["query"], x["page"], x["country"]))]
             pq = defaultdict(lambda: defaultdict(list))
             for x in sorted(win.get(("pq", name, m["code"]), []), key=lambda x: (-x["i"], x["query"])):
                 pq[x["page"]][x["win"]].append([x["query"], x["c"], x["i"], round(x["p"], 1)])
@@ -527,25 +567,10 @@ def build(run_id=None, runs=None, fresh=False):
                 write_json(OUT / f"{name}{suffix(m['code'])}.sections.json",
                            sections_payload(m, meta, sec_series.get(k, {}), sec_sum.get(k, {}), W, generated))
             if m["code"] == dm:
-                index["projects"].append(summary(p))
+                projects.append(summary(p))
             print(f"[{name}/{m['code']}] {len(p['keywords'])} mots-clés, {len(p['alerts'])} alertes, {len(p['events'])} événements, "
                   f"{len(p['actions'])} actions, {len(p['cannib'])} requêtes cannibalisées")
-    write_json(OUT / "index.json", index)
-    version = hashlib.sha1(b"".join(f.read_bytes() for f in sorted(OUT.glob("*.json")))).hexdigest()[:12]
-    write_json(OUT / "manifest.json", {"version": version, "generated_at": generated})
-    upd.update(sec_meta)
-    runs.append({"run_id": run_id, "started_at": datetime.now(timezone.utc).isoformat(), "seconds": round(time.time() - t0, 1),
-                 "site": None, "step": "calcul", "ok": True, "bq_jobs": bq.usage["jobs"], "bq_bytes_billed": bq.usage["bytes_billed"] - b0,
-                 "detail": f"{len(sites)} projets, version {version}"})
-    def log():
-        try:
-            bq.log_runs(runs)
-        except Exception as e:  # le journal ne doit jamais bloquer la publication
-            print(f"journal des synchros : {e}")
-    with ThreadPoolExecutor(max_workers=2) as ex:
-        list(ex.map(lambda f: f(), [lambda: bq.state_put(upd), log]))
-    print(f"Calcul : {len(sites)} projets en {time.time() - t0:.0f} s, {(bq.usage['bytes_billed'] - b0) / 1e6:.0f} Mo facturés "
-          f"(BigQuery, {bq.usage['jobs']} requêtes au total)")
+    return projects, sec_meta
 
 
 def data_quality(m, cov, truncation, W):

@@ -11,6 +11,7 @@ l'API Search Console, partitionnées par jour (filtre de date obligatoire) et ra
 
 Tables calculées dans BigQuery :
 
+  page_country_daily  site × jour × pays × page       raw_queries sans la requête (requêtes connues), pour les marchés pays
   tracked_daily  site × jour × pays × requête × page   lignes des mots-clés suivis, mises à jour sur les seuls jours réécrits
   section_daily  site × marché × regroupement (grp) × dossier × jour
 
@@ -36,7 +37,7 @@ from datetime import date, datetime, timezone
 
 DATASET = os.environ.get("BQ_DATASET") or "gsc"
 LOCATION = os.environ.get("BQ_LOCATION") or "EU"
-MAX_BYTES = int(float(os.environ.get("BQ_MAX_GB") or 5) * 1024 ** 3)   # garde-fou par requête (plafond du projet : 50 Gio par jour)
+MAX_BYTES = int(float(os.environ.get("BQ_MAX_GB") or 20) * 1024 ** 3)  # garde-fou par requête (une requête couvre un lot de projets) ; plafond du projet : 200 Gio par jour
 FLUSH_ROWS = 200_000          # lignes gardées en mémoire avant envoi dans la table tampon
 EPOCH = date(2000, 1, 1)      # borne basse des lectures « tout l'historique » (le filtre de date est obligatoire)
 
@@ -82,6 +83,7 @@ TABLES = {
     "raw_totals": ([("site", _S), ("date", _D), ("country", _S)] + METRICS, ["site", "country"]),
     "kw_site": ([("site", _S), ("market", _S), ("date", _D), ("query", _S)] + METRICS, ["site", "market", "query"]),
     "segments": ([("site", _S), ("market", _S), ("date", _D), ("segment", _S)] + METRICS, ["site", "market", "segment"]),
+    "page_country_daily": ([("site", _S), ("date", _D), ("country", _S), ("page", _S)] + METRICS, ["site", "country", "page"]),
     "tracked_daily": ([("site", _S), ("date", _D), ("country", _S), ("query", _S), ("page", _S)] + METRICS, ["site", "query", "country", "page"]),
     "section_daily": ([("site", _S), ("market", _S), ("grp", _S), ("section", _S), ("date", _D)] + METRICS, ["site", "market", "grp", "section"]),
 }
@@ -107,6 +109,10 @@ def ensure_schema():
         t.clustering_fields = cluster
         c.create_table(t)
         print(f"BigQuery : table {name} créée")
+        if name == "page_country_daily" and "raw_queries" in existing:   # table ajoutée après coup : remplie une fois
+            query(f"""INSERT INTO {T(name)} (site, date, country, page, clicks, impressions, position)
+                      SELECT site, date, country, page, SUM(clicks), SUM(impressions), SUM(position * impressions) / SUM(impressions)
+                      FROM {T('raw_queries')} WHERE date >= @epoch GROUP BY 1, 2, 3, 4""", {"epoch": EPOCH}, max_bytes=50 * 1024 ** 3)
     if "state" not in existing:
         t = b.Table(f"{project()}.{DATASET}.state", schema=[b.SchemaField("site", _S), b.SchemaField("key", _S),
                                                              b.SchemaField("value", _S), b.SchemaField("updated_at", _TS)])
@@ -296,6 +302,18 @@ class Stage:
         # Une transaction par table, toutes en parallèle (tables indépendantes) ; tracked_daily, qui lit raw_queries, suit
         # raw_queries dans la même transaction
         from concurrent.futures import ThreadPoolExecutor
+        rqs = [s for s in self.scopes if s["tbl"] == "raw_queries"]
+        if rqs:
+            params["pa"] = min(date.fromisoformat(s["a"]) for s in rqs)
+            params["pb"] = max(date.fromisoformat(s["b"]) for s in rqs)
+            params["ps"] = sorted({s["site"] for s in rqs})
+            pc = "s.tbl = 'raw_queries' AND s.site = t.site AND t.date BETWEEN s.a AND s.b"
+            sql += [f"""DELETE FROM {T('page_country_daily')} t WHERE t.date BETWEEN @pa AND @pb AND t.site IN UNNEST(@ps)
+                        AND EXISTS (SELECT 1 FROM {scopes_cte} s WHERE {pc});""",
+                    f"""INSERT INTO {T('page_country_daily')} (site, date, country, page, clicks, impressions, position)
+                        SELECT t.site, t.date, t.country, t.page, SUM(t.clicks), SUM(t.impressions), SUM(t.position * t.impressions) / SUM(t.impressions)
+                        FROM {st} t WHERE t.tbl = 'raw_queries' AND EXISTS (SELECT 1 FROM {scopes_cte} s WHERE {pc})
+                        GROUP BY 1, 2, 3, 4;"""]
         for stmts in scripts:
             if "raw_queries" in stmts[0]:
                 stmts += sql
